@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MakaMoba  Map & Click-to-Move</title>
+  <link rel="stylesheet" href="./app.css" />
+  <!-- Import map moved into app.js (kept inside JS via dynamic import or left to HTML if needed) -->
+<script type="importmap">
+{
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+      }
+    }
+</script>
+</head>
+<body>
+<div class="app" id="app" data-collapsed="false" data-hidden="false">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar__header">
+        <button id="sbHide" class="sidebar__toggle" title="Hide menu" aria-label="Hide menu">
+          <span class="sidebar__toggle-icon" aria-hidden="true"></span>
+        </button>
+        <div class="sidebar__title">MakaMoba</div>
+      </div>
+      <nav class="sidebar__content" id="sidebarContent" aria-label="Simulation controls">
+        <section class="sidebar-section" data-section="play" aria-label="Start">
+          <button class="btn" id="btnPlay" data-icon="" title="Start/Stop">
+             Start <span class="hint">Begin waves</span>
+          </button>
+        </section>
+        <section class="sidebar-section" data-section="map" aria-label="Map">
+          <button class="btn" id="btnMap" data-icon="" title="Upload map">
+            Map <span class="hint">Upload image</span>
+          </button>
+          <input id="file" type="file" accept="image/*" style="display:none" />
+          <div class="fileNameWrap" id="fileNameWrap">
+            <span class="dot"></span>
+            <div id="fileName" class="hint">No map loaded</div>
+          </div>
+        </section>
+        <section class="sidebar-section" data-section="hitbox" aria-label="Hitbox Map">
+          <button class="btn" id="btnHitbox" data-icon="" title="Upload hitbox map">
+            Hitbox Map <span class="hint">Upload collision</span>
+          </button>
+          <input id="fileHitbox" type="file" accept="image/*" style="display:none" />
+          <div class="fileNameWrap" id="hitboxNameWrap">
+            <span class="dot"></span>
+            <div id="hitboxName" class="hint">No hitbox map loaded</div>
+          </div>
+        </section>
+        <section class="sidebar-section" data-section="game-state" aria-label="Game Setup">
+          <button class="btn" id="btnGameState" data-icon="" title="Import/export all settings">
+            Game Setup <span class="hint">Full import/export</span>
+          </button>
+          <div class="submenu" id="gameStatePane">
+            <div class="formrow"><label>Entire project</label><div class="rangeWrap"><button class="formButton" id="gameStateImport" type="button">Import setup</button><button class="formButton" id="gameStateExport" type="button">Export setup</button></div></div>
+            <div class="subhint">Saves every setting, including the map, lanes, minions, player, HUD, and vision tuning.</div>
+            <input id="gameStateImportFile" type="file" accept="application/json,.json" style="display:none" />
+          </div>
+        </section>
+        <section class="sidebar-section" data-section="colliders" aria-label="Collision">
+          <button class="btn" id="btnColliders" data-icon="" title="Collision editor">
+            Collision <span class="hint">Place blockers</span>
+          </button>
+          <div class="submenu" id="colliderPane">
+            <button class="subbtn" id="colliderEditToggle" type="button">Enter collision edit mode</button>
+            <div class="formrow"><label for="colliderShape">Shape</label><select id="colliderShape"><option value="circle">Circle</option><option value="capsule">Pill</option><option value="crescent">Crescent</option></select></div>
+            <div class="formrow rangeRow"><label for="colliderRadius">Size</label><div class="rangeWrap"><input type="number" id="colliderRadius" min="0" max="10000" value="80"><span class="rangeValue" id="colliderRadiusDisplay">80px</span></div></div>
+            <div class="formrow rangeRow" id="colliderInnerRadiusRow"><label for="colliderInnerRadius">Inner curve</label><div class="rangeWrap"><input type="number" id="colliderInnerRadius" min="0" max="10000" value="40"><span class="rangeValue" id="colliderInnerRadiusDisplay">40px</span></div></div>
+            <div class="formrow rangeRow" id="colliderOffsetRow"><label for="colliderOffset">Arc offset</label><div class="rangeWrap"><input type="number" id="colliderOffset" min="0" max="10000" value="110"><span class="rangeValue" id="colliderOffsetDisplay">110px</span></div></div>
+            <div class="formrow rangeRow" id="colliderLengthRow"><label for="colliderLength">Length</label><div class="rangeWrap"><input type="number" id="colliderLength" min="0" max="10000" value="200"><span class="rangeValue" id="colliderLengthDisplay">200px</span></div></div>
+            <div class="formrow rangeRow" id="colliderRotationRow"><label for="colliderRotation">Rotation</label><div class="rangeWrap"><input type="number" id="colliderRotation" min="0" max="360" value="0"><span class="rangeValue" id="colliderRotationDisplay">0°</span></div></div>
+            <div class="formrow"><label>Placement</label><div class="rangeWrap"><button class="formButton" id="colliderPlace" type="button">Place new shape</button><button class="formButton" id="colliderToggleVisibility" type="button">Hide shapes</button></div></div>
+            <div class="formrow"><label>Selection</label><div class="rangeWrap"><button class="formButton" id="colliderDelete" type="button" disabled>Delete selected</button></div></div>
+            <div class="formrow"><label>Data</label><div class="rangeWrap"><button class="formButton" id="colliderLoad" type="button">Load map</button><button class="formButton" id="colliderSave" type="button">Save map</button></div></div>
+            <input id="colliderImport" type="file" accept="application/json,.json" style="display:none" />
+            <div class="subhint">Collision shapes</div>
+            <div class="colliderList" id="colliderList" role="listbox" aria-label="Collision shapes"></div>
+          </div>
+        </section>
+        <section class="sidebar-section" data-section="vision" aria-label="Vision">
+          <button class="btn" id="btnVision" data-icon="" title="Vision editor">
+            Vision <span class="hint">Fog of war</span>
+          </button>
+          <div class="submenu" id="visionPane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="visionConfigLoad" type="button">Load setup</button><button class="formButton" id="visionConfigSave" type="button">Save setup</button></div></div>
+            <input id="visionConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <div class="subhint">Configure fog of war vision sources.</div>
+            <button class="subbtn" id="visionEditToggle" type="button">Enter vision edit mode</button>
+            <div class="formrow rangeRow"><label for="GameState.player.vision.radius">Player vision</label><div class="rangeWrap"><input type="number" id="GameState.player.vision.radius" min="0" max="10000" value="900"><span class="rangeValue" id="playerVisionRadiusDisplay">900px</span></div></div>
+            <div class="subhint">Vision shapes</div>
+            <div class="formrow"><label for="visionShape">Shape</label><select id="visionShape"><option value="circle">Circle</option><option value="capsule">Pill</option><option value="crescent">Crescent</option></select></div>
+            <div class="formrow"><label for="visionMode">Type</label><select id="visionMode"><option value="vision">Vision</option><option value="hiding">Hiding</option></select></div>
+            <div class="formrow rangeRow"><label for="visionRadius">Size</label><div class="rangeWrap"><input type="number" id="visionRadius" min="0" max="10000" value="240"><span class="rangeValue" id="visionRadiusDisplay">240px</span></div></div>
+            <div class="formrow rangeRow" id="visionInnerRadiusRow"><label for="visionInnerRadius">Inner curve</label><div class="rangeWrap"><input type="number" id="visionInnerRadius" min="0" max="10000" value="120"><span class="rangeValue" id="visionInnerRadiusDisplay">120px</span></div></div>
+            <div class="formrow rangeRow" id="visionOffsetRow"><label for="visionOffset">Arc offset</label><div class="rangeWrap"><input type="number" id="visionOffset" min="0" max="10000" value="240"><span class="rangeValue" id="visionOffsetDisplay">240px</span></div></div>
+            <div class="formrow rangeRow" id="visionLengthRow"><label for="visionLength">Length</label><div class="rangeWrap"><input type="number" id="visionLength" min="0" max="10000" value="400"><span class="rangeValue" id="visionLengthDisplay">400px</span></div></div>
+            <div class="formrow rangeRow" id="visionRotationRow"><label for="visionRotation">Rotation</label><div class="rangeWrap"><input type="number" id="visionRotation" min="0" max="360" value="0"><span class="rangeValue" id="visionRotationDisplay">0°</span></div></div>
+            <div class="formrow"><label>Placement</label><div class="rangeWrap"><button class="formButton" id="visionPlace" type="button">Place new vision</button><button class="formButton" id="visionToggleVisibility" type="button">Hide vision</button></div></div>
+            <div class="formrow"><label>Selection</label><div class="rangeWrap"><button class="formButton" id="visionDelete" type="button" disabled>Delete selected</button></div></div>
+            <div class="colliderList" id="visionList" role="listbox" aria-label="Vision shapes"></div>
+          </div>
+
+          <!-- Minions -->
+        </section>
+        <section class="sidebar-section" data-section="minions" aria-label="Minions">
+          <button class="btn" id="btnMinions" data-icon="" title="Minions">
+            Minions <span class="hint">Create spawns</span>
+          </button>
+          <div class="submenu" id="minionsPane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="minionConfigLoad" type="button">Load setup</button><button class="formButton" id="minionConfigSave" type="button">Save setup</button></div></div>
+            <input id="minionConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <button class="subbtn" id="btnSpawnBlue">Create Blue-side spawn</button>
+            <button class="subbtn" id="btnSpawnRed">Create Red-side spawn</button>
+            <div class="subhint">Place one <b>Blue spawn</b> and one <b>Red spawn</b>. Each side marches toward the opposing spawn.</div>
+
+            <div class="formrow"><label for="GameState.lanes.count">Number of lanes</label><input type="number" id="GameState.lanes.count" min="1" value="1"></div>
+            <div class="subhint">Minions per lane = total minions  lanes. Adjust diagonal offsets to bend each path.</div>
+            <div class="laneOffsetList" id="laneOffsets"></div>
+
+            <div class="formrow"><label for="waveState.waveCount">Minions per wave (01000)</label><input type="number" id="waveState.waveCount" min="0" max="1000" value="7"></div>
+            <div class="formrow"><label for="waveInterval">Respawn every (sec, 560)</label><input type="number" id="waveInterval" min="5" max="60" value="30"></div>
+            <div class="formrow"><label for="spawnSpacing">Delay between spawns (sec, 0.001.00)</label><input type="number" id="spawnSpacing" min="0" max="1" step="0.01" value="0.25"></div>
+
+            <!-- Custom stats + per-wave scaling -->
+            <div class="formrow"><label for="minionSize">Minion size (px, 01000)</label><input type="number" id="minionSize" min="0" max="1000" value="15"></div>
+            <div class="formrow"><label for="minionHP">Minion health (11000)</label><input type="number" id="minionHP" min="1" max="1000" value="1000"></div>
+            <div class="formrow"><label for="minionDMG">Minion damage (1100)</label><input type="number" id="minionDMG" min="1" max="100" value="40"></div>
+            <div class="formrow"><label for="portalState.scalePct">Scaling per wave % (050)</label><input type="number" id="portalState.scalePct" min="0" max="50" value="10"></div>
+            <div class="subhint">Scaling is linear: stats this wave = base  (1 + %  (wave1)).</div>
+          </div>
+
+          <!-- Player -->
+        </section>
+        <section class="sidebar-section" data-section="player" aria-label="Player">
+          <button class="btn" id="btnPlayer" data-icon="" title="Player settings">
+            Player <span class="hint">Hero tuning</span>
+          </button>
+          <div class="submenu" id="playerPane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="playerConfigLoad" type="button">Load setup</button><button class="formButton" id="playerConfigSave" type="button">Save setup</button></div></div>
+            <input id="playerConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <div class="formrow"><label for="playerSpeed">Movement speed (px/s, 11000)</label><input type="number" id="playerSpeed" min="1" max="1000" value="240"></div>
+            <div class="formrow"><label for="playerSize">Player size (px, 01000)</label><input type="number" id="playerSize" min="0" max="1000" value="10"></div>
+            <div class="formrow"><label for="playerTeam">Team</label><select id="playerTeam"><option value="blue">Blue</option><option value="red">Red</option></select></div>
+            <div class="formrow"><label for="playerHitboxToggle">Player hitbox</label><button class="formButton" id="playerHitboxToggle" type="button">Hide hitbox</button></div>
+            <div class="formrow"><label for="playerHitboxShape">Hitbox shape</label><select id="playerHitboxShape"><option value="capsule">Capsule</option><option value="circle">Circle</option><option value="rectangle">Rectangle</option></select></div>
+            <div class="formrow rangeRow"><label for="playerHitboxLength">Hitbox length</label><div class="rangeWrap"><input type="number" id="playerHitboxLength" min="0" max="10000" value="32"><span class="rangeValue" id="playerHitboxLengthDisplay">32px</span></div></div>
+            <div class="formrow rangeRow"><label for="playerHitboxWidth">Hitbox width</label><div class="rangeWrap"><input type="number" id="playerHitboxWidth" min="0" max="10000" value="20"><span class="rangeValue" id="playerHitboxWidthDisplay">20px</span></div></div>
+            <div class="subhint">Adjust the overlay shape to match your model. Click indicator settings below.</div>
+            <div class="subhint">Spell origin</div>
+            <div class="formrow rangeRow"><label for="playerSpellOriginLength">Origin length offset</label><div class="rangeWrap"><input type="number" id="playerSpellOriginLength" min="0" max="10000" value="1000"><span class="rangeValue" id="playerSpellOriginLengthDisplay">0px</span></div></div>
+            <div class="formrow rangeRow"><label for="playerSpellOriginWidth">Origin width offset</label><div class="rangeWrap"><input type="number" id="playerSpellOriginWidth" min="0" max="10000" value="1000"><span class="rangeValue" id="playerSpellOriginWidthDisplay">0px</span></div></div>
+            <div class="formrow"><label for="playerMoveCircleStart">Move circle start radius (px, 01000)</label><input type="number" id="playerMoveCircleStart" min="0" max="1000" value="12"></div>
+            <div class="formrow"><label for="playerMoveCircleEnd">Move circle end radius (px, 01000)</label><input type="number" id="playerMoveCircleEnd" min="0" max="1000" value="52"></div>
+            <div class="formrow"><label for="playerMoveCircleColor">Move circle color</label><input type="color" id="playerMoveCircleColor" value="#7fe3ff"></div>
+            <div class="subhint">Auto attack</div>
+            <div class="formrow"><label for="playerAttackRange">Attack range (px, 01000)</label><input type="number" id="playerAttackRange" min="0" max="1000" value="200"></div>
+            <div class="formrow rangeRow"><label for="playerAttackRangeOpacity">Range overlay opacity</label><div class="rangeWrap"><input type="number" id="playerAttackRangeOpacity" min="0" max="10000" value="14"><span class="rangeValue" id="playerAttackRangeOpacityDisplay">14%</span></div></div>
+            <div class="formrow"><label for="playerAttackSpeed">Attack speed (ms, 05000)</label><input type="number" id="playerAttackSpeed" min="0" max="5000" value="1000"></div>
+            <div class="formrow"><label for="playerAttackWindup">Attack windup (ms, 05000)</label><input type="number" id="playerAttackWindup" min="0" max="5000" value="250"></div>
+            <div class="formrow"><label for="playerAttackDamage">Attack damage (01000)</label><input type="number" id="playerAttackDamage" min="0" max="1000" value="10"></div>
+            <div class="formrow"><label for="playerHitSplatSize">Damage number size (px, 0100)</label><input type="number" id="playerHitSplatSize" min="0" max="100" value="28"></div>
+          </div>
+
+          <!-- Health Bar -->
+        </section>
+        <section class="sidebar-section" data-section="health" aria-label="Health Bar">
+          <button class="btn" id="btnHealth" data-icon="" title="Health bar settings">
+            Health Bar <span class="hint">Vitals & statuses...</span>
+          </button>
+          <div class="submenu" id="healthPane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="healthConfigLoad" type="button">Load setup</button><button class="formButton" id="healthConfigSave" type="button">Save setup</button></div></div>
+            <input id="healthConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <div class="formrow"><label for="playerHP">Player health (0-10000)</label><input type="number" id="playerHP" min="0" max="10000" value="1000"></div>
+            <div class="formrow rangeRow"><label for="playerFloatSize">Health bar width</label><div class="rangeWrap"><input type="number" id="playerFloatSize" min="0" max="10000" value="120"><span class="rangeValue" id="playerFloatSizeDisplay">120px</span></div></div>
+            <div class="formrow rangeRow"><label for="playerFloatHeight">Health bar height</label><div class="rangeWrap"><input type="number" id="playerFloatHeight" min="0" max="500" value="18"><span class="rangeValue" id="playerFloatHeightDisplay">18px</span></div></div>
+            <div class="formrow rangeRow"><label for="playerFloatOffset">Health bar overhead space</label><div class="rangeWrap"><input type="number" id="playerFloatOffset" min="0" max="10000" value="18"><span class="rangeValue" id="playerFloatOffsetDisplay">18px</span></div></div>
+            <div class="subhint">Auto attack readiness bar</div>
+            <div class="formrow rangeRow"><label for="playerAttackBarWidth">Bar width</label><div class="rangeWrap"><input type="number" id="playerAttackBarWidth" min="0" max="10000" value="120"><span class="rangeValue" id="playerAttackBarWidthDisplay">120px</span></div></div>
+            <div class="formrow rangeRow"><label for="playerAttackBarHeight">Bar height</label><div class="rangeWrap"><input type="number" id="playerAttackBarHeight" min="0" max="500" value="6"><span class="rangeValue" id="playerAttackBarHeightDisplay">6px</span></div></div>
+            <div class="formrow"><label>Bar offset</label><div class="offsetGroup"><label><span>H</span><input type="number" id="playerAttackBarOffsetX" min="-500" max="500" value="0"></label><label><span>V</span><input type="number" id="playerAttackBarOffsetY" min="-500" max="500" value="0"></label></div></div>
+            <div class="subhint">Status icons</div>
+            <div class="formrow rangeRow"><label for="playerIconWidth">Icon width</label><div class="rangeWrap"><input type="number" id="playerIconWidth" min="0" max="200" value="24"><span class="rangeValue" id="playerIconWidthDisplay">24px</span></div></div>
+            <div class="formrow rangeRow"><label for="playerIconHeight">Icon height</label><div class="rangeWrap"><input type="number" id="playerIconHeight" min="0" max="200" value="24"><span class="rangeValue" id="playerIconHeightDisplay">24px</span></div></div>
+            <div class="formrow"><label>Icon offset</label><div class="offsetGroup"><label><span>H</span><input type="number" id="playerIconOffsetX" min="-500" max="500" value="12"></label><label><span>V</span><input type="number" id="playerIconOffsetY" min="-500" max="500" value="0"></label></div></div>
+            <div class="subhint">Player states</div>
+            <div class="playerStateConfigList" id="playerStateConfig" aria-live="polite"></div>
+          </div>
+
+          <!-- Practice Dummy -->
+        </section>
+        <section class="sidebar-section" data-section="practice-dummy" aria-label="Practice Dummy">
+          <button class="btn" id="btnPracticeDummy" data-icon="" title="Practice dummy settings">
+            Practice Dummy <span class="hint">Target tuning</span>
+          </button>
+          <div class="submenu" id="practiceDummyPane">
+            <div class="formrow">
+              <label>Placement</label>
+              <div class="rangeWrap">
+                <button class="formButton" id="practiceDummyMove" type="button">Move dummy</button>
+                <button class="formButton" id="practiceDummyReset" type="button">Reset dummy</button>
+                <button class="formButton" id="practiceDummyRemove" type="button" disabled>Remove dummy</button>
+              </div>
+            </div>
+            <div class="formrow" id="practiceDummyDeathRow">
+              <label for="practiceDummyDeathResponse">On death</label>
+              <select id="practiceDummyDeathResponse">
+                <option value="respawn">Respawn in place</option>
+                <option value="despawn">Despawn until replaced</option>
+              </select>
+            </div>
+            <div class="formrow rangeRow"><label for="practiceDummySize">Dummy size</label><div class="rangeWrap"><input type="number" id="practiceDummySize" min="20" max="400" value="120"><span class="rangeValue" id="practiceDummySizeDisplay">120px</span></div></div>
+            <div class="subhint">Dummy inherits player health bar styling and status icons.</div>
+          </div>
+
+          <!-- Prayers -->
+        </section>
+        <section class="sidebar-section" data-section="prayers" aria-label="Prayers">
+          <button class="btn" id="btnPrayers" data-icon="" title="Protection prayers">
+            Prayers <span class="hint">Toggle protections</span>
+          </button>
+          <div class="submenu" id="prayerPane">
+            <div class="subhint">Only one protection prayer can be active at a time.</div>
+            <div class="playerStateConfigList" id="prayerList" aria-live="polite"></div>
+          </div>
+
+          <!-- Monsters -->
+        </section>
+        <section class="sidebar-section" data-section="monsters" aria-label="Monsters">
+          <button class="btn" id="btnMonsters" data-icon="" title="Monster settings">
+            Monsters <span class="hint">Raid guardian</span>
+          </button>
+          <div class="submenu" id="monsterPane">
+            <div class="formrow"><label>Placement</label><div class="rangeWrap"><button class="formButton" id="monsterMove" type="button">Move monster</button></div></div>
+            <div class="formrow"><label for="monsterAggroRadius">Aggro radius (px)</label><input type="number" id="monsterAggroRadius" min="0" max="5000" value="420"></div>
+            <div class="formrow"><label for="monsterSize">Body size (px)</label><input type="number" id="monsterSize" min="40" max="400" value="140"></div>
+            <div class="formrow"><label for="monsterMaxHp">Monster health</label><input type="number" id="monsterMaxHp" min="1" max="100000" value="5000"></div>
+            <div class="formrow"><label for="monsterProjectileDamage">Projectile damage</label><input type="number" id="monsterProjectileDamage" min="0" max="10000" value="120"></div>
+            <div class="formrow"><label for="monsterCastInterval">Ability cadence (sec)</label><input type="number" step="0.1" id="monsterCastInterval" min="0.5" max="30" value="3"></div>
+            <div class="formrow"><label for="monsterQueueSize">Queue preview (spells)</label><input type="number" id="monsterQueueSize" min="1" max="6" value="3"></div>
+            <div class="formrow"><label for="monsterSlotSpin">Spin time (sec)</label><input type="number" step="0.1" id="monsterSlotSpin" min="0" max="10" value="1.2"></div>
+            <div class="formrow"><label for="monsterSlotReveal">Show color time (sec)</label><input type="number" step="0.1" id="monsterSlotReveal" min="0" max="10" value="0.6"></div>
+            <div class="subhint">A slot machine above the boss spins before each cast. Each player in range is targeted separately.</div>
+            <div class="formrow"><label for="monsterFreezeDuration">Blue freeze (sec)</label><input type="number" step="0.1" id="monsterFreezeDuration" min="0" max="10" value="1.5"></div>
+            <div class="formrow"><label for="monsterSpeedBoostPct">Red speed boost (%)</label><input type="number" step="1" id="monsterSpeedBoostPct" min="0" max="500" value="25"></div>
+            <div class="formrow"><label for="monsterHealAmount">Green heal</label><input type="number" step="1" id="monsterHealAmount" min="0" max="10000" value="200"></div>
+            <div class="subhint">Configure the emojis used for both monster telegraphs and protection prayers.</div>
+            <div class="formrow"><label for="monsterIconGreen">Green emoji</label><input type="text" id="monsterIconGreen" maxlength="6" value=""></div>
+            <div class="formrow"><label for="monsterIconBlue">Blue emoji</label><input type="text" id="monsterIconBlue" maxlength="6" value=""></div>
+            <div class="formrow"><label for="monsterIconRed">Red emoji</label><input type="text" id="monsterIconRed" maxlength="6" value=""></div>
+          </div>
+
+          <!-- Camera -->
+        </section>
+        <section class="sidebar-section" data-section="camera" aria-label="Camera">
+          <button class="btn" id="btnCamera" data-icon="" title="Camera settings" data-help-title="Camera options" data-help-text="Tune how the tactical camera follows your champion and how you scout the battlefield.">
+            Camera <span class="hint">Follow behavior...</span>
+          </button>
+          <div class="submenu" id="cameraPane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="cameraConfigLoad" type="button">Load setup</button><button class="formButton" id="cameraConfigSave" type="button">Save setup</button></div></div>
+            <input id="cameraConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <div class="formrow" data-help-title="Camera mode" data-help-text="Switch between locked, semi-locked, or completely free camera movement.">
+              <label for="cameraMode">Camera mode</label>
+              <select id="cameraMode">
+                <option value="locked">Locked</option>
+                <option value="semi">Semi-locked</option>
+                <option value="free">Unlocked</option>
+              </select>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Follow responsiveness" data-help-text="Control how quickly the camera catches up to your champion after they move.">
+              <label for="cameraFollowLag">Follow responsiveness</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraFollowLag" min="0" max="200" value="0">
+                <span class="rangeValue" id="cameraFollowLagDisplay">Instant</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Forward offset" data-help-text="Bias the camera slightly in the direction of motion so you can see more of the threats ahead.">
+              <label for="cameraLead">Forward offset</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraLead" min="0" max="3000" value="0">
+                <span class="rangeValue" id="cameraLeadDisplay">0px</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Horizontal offset" data-help-text="Shift the camera left or right relative to your champion using a percentage of the current view width.">
+              <label for="cameraHorizontalOffset">Horizontal offset</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraHorizontalOffset" min="-100" max="100" value="0">
+                <span class="rangeValue" id="cameraHorizontalOffsetDisplay">Centered</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Vertical offset" data-help-text="Shift the camera up or down relative to your champion using a percentage of the current view height.">
+              <label for="cameraVerticalOffset">Vertical offset</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraVerticalOffset" min="-100" max="100" value="0">
+                <span class="rangeValue" id="cameraVerticalOffsetDisplay">Centered</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Edge scroll margin" data-help-text="Set how close to the screen edge the mouse must be before the camera begins panning. Set to zero to disable edge scroll.">
+              <label for="cameraEdgeMargin">Edge scroll margin</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraEdgeMargin" min="0" max="3000" value="0">
+                <span class="rangeValue" id="cameraEdgeMarginDisplay">0px</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Edge scroll speed" data-help-text="How fast the camera travels while edge scrolling is active.">
+              <label for="cameraEdgeSpeed">Edge scroll speed</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraEdgeSpeed" min="0" max="3000" step="10" value="0">
+                <span class="rangeValue" id="cameraEdgeSpeedDisplay">Off</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Recentering delay" data-help-text="How long the camera keeps your manual offset before easing back toward your champion in semi-locked mode.">
+              <label for="cameraRecenterDelay">Recentering delay</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraRecenterDelay" min="0" max="1000" step="10" value="0">
+                <span class="rangeValue" id="cameraRecenterDelayDisplay">0s</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Semi-lock leash" data-help-text="Limit how far the camera can drift off your champion before it softly reels back in. Set to zero for unlimited drift.">
+              <label for="cameraManualLeash">Semi-lock leash</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraManualLeash" min="0" max="3000" step="10" value="0">
+                <span class="rangeValue" id="cameraManualLeashDisplay">Unlimited</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Zoom level" data-help-text="Adjust the tactical camera zoom. Lower values pull out for a wider view; higher values zoom in.">
+              <label for="cameraZoom">Zoom level</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraZoom" min="0" max="500" value="100">
+                <span class="rangeValue" id="cameraZoomDisplay">100%</span>
+              </div>
+            </div>
+            <div class="formrow" data-help-title="Lock zooming in" data-help-text="Prevent the camera from zooming in closer than the current level." data-setting-id="camera.zoomInLock" data-setting-type="boolean" data-setting-tags="camera,zoom" data-setting-aliases="zoom lock,lock zoom in" data-setting-section="Zoom" data-setting-control="cameraZoomInLock">
+              <label for="cameraZoomInLock">Zoom in lock</label>
+              <button type="button" class="formButton" id="cameraZoomInLock">Unlocked</button>
+            </div>
+            <div class="formrow" data-help-title="Lock zooming out" data-help-text="Prevent the camera from zooming out farther than the current level." data-setting-id="camera.zoomOutLock" data-setting-type="boolean" data-setting-tags="camera,zoom" data-setting-aliases="zoom lock,lock zoom out" data-setting-section="Zoom" data-setting-control="cameraZoomOutLock">
+              <label for="cameraZoomOutLock">Zoom out lock</label>
+              <button type="button" class="formButton" id="cameraZoomOutLock">Unlocked</button>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Zoom wheel sensitivity" data-help-text="Adjust how strong the zoom wheel feels. Set to zero to disable wheel zooming altogether.">
+              <label for="cameraWheelSensitivity">Zoom wheel sensitivity</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraWheelSensitivity" min="0" max="40" value="20">
+                <span class="rangeValue" id="cameraWheelSensitivityDisplay">20%/step</span>
+              </div>
+            </div>
+            <div class="formrow" data-help-title="Camera lock key" data-help-text="Press this key to toggle between your locked view and your preferred free mode.">
+              <label for="cameraLockBind">Camera lock key</label>
+              <button type="button" class="formButton" id="cameraLockBind">Space</button>
+            </div>
+            <div class="formrow" data-help-title="Quick recenter" data-help-text="Snap the camera back to your champion immediately.">
+              <label for="cameraRecenterBtn">Quick recenter</label>
+              <button type="button" class="formButton" id="cameraRecenterBtn">Recenter now</button>
+            </div>
+            <div class="subhint" data-help-title="Camera tips" data-help-text="Hover the camera controls to learn how each option changes the tactical view.">Drag with the middle mouse button or use edge scrolling to scout. Press the lock key to snap back.</div>
+          </div>
+
+          <!-- Animation -->
+        </section>
+        <section class="sidebar-section" data-section="animation" aria-label="Animation">
+          <button class="btn" id="btnAnimation" data-icon="" title="Animation settings">
+            Animation <span class="hint">Player model</span>
+          </button>
+          <div class="submenu" id="animationPane">
+            <button class="subbtn" id="btnPlayerAnimation" type="button">Create player animation</button>
+            <div class="playerAnimationSection" id="playerAnimationSection" hidden>
+              <div class="playerAnimationButtons">
+                <button class="formButton" id="btnPlayerAnimationLoad" type="button">Load .fbx</button>
+                <button class="formButton" id="btnPlayerAnimationLoadGlb" type="button">Load .glb</button>
+                <button class="formButton" id="btnPlayerAnimationMixamoCombine" type="button">Mixamo animation combinator</button>
+                <button class="formButton" id="btnPlayerAnimationLoadSetup" type="button">Load setup</button>
+                <button class="formButton" id="btnPlayerAnimationSave" type="button">Save setup</button>
+                <button class="formButton" id="btnPlayerAnimationClear" type="button">Clear model</button>
+              </div>
+              <input id="playerAnimationFile" type="file" accept=".fbx,.glb" />
+              <input id="playerAnimationConfigFile" type="file" accept="application/json,.json" style="display:none" />
+              <input id="playerMixamoBaseFile" type="file" accept=".fbx" style="display:none" />
+              <input id="playerMixamoAnimationFiles" type="file" accept=".fbx" style="display:none" multiple />
+              <div class="playerAnimationStatus" id="playerAnimationStatus">No player model loaded.</div>
+              <div class="playerAnimationStage" id="playerAnimationStage" aria-live="polite">
+                <canvas id="playerAnimationCanvas"></canvas>
+                <div class="playerAnimationDrop" id="playerAnimationDrop">Drop .fbx or .glb file to load</div>
+              </div>
+              <div class="playerAnimationViewControls" aria-label="Player animation viewport controls">
+                <div class="formrow playerAnimationScaleRow">
+                  <label for="playerAnimationScaleRange">Model scale</label>
+                  <div class="rangeWrap">
+                    <input id="playerAnimationScaleRange" type="number" min="0.01" max="1000" step="0.01" value="1" />
+                    <input id="playerAnimationScaleInput" type="number" min="0.01" max="1000" step="0.01" value="1" />
+                  </div>
+                </div>
+                <div class="formrow playerAnimationOffsetRow">
+                  <label for="playerAnimationOffsetHorizontalInput">Horizontal offset (px)</label>
+                  <input id="playerAnimationOffsetHorizontalInput" type="number" min="-1000" max="1000" step="1" value="0" />
+                </div>
+                <div class="formrow playerAnimationOffsetRow">
+                  <label for="playerAnimationOffsetVerticalInput">Vertical offset (px)</label>
+                  <input id="playerAnimationOffsetVerticalInput" type="number" min="-1000" max="1000" step="1" value="0" />
+                </div>
+                <div class="formrow playerAnimationLightRow">
+                  <label for="playerAnimationLightAngleRange">Lighting angle ()</label>
+                  <div class="rangeWrap">
+                    <input id="playerAnimationLightAngleRange" type="number" min="0" max="360" step="1" value="45" />
+                    <input id="playerAnimationLightAngleInput" type="number" min="0" max="360" step="1" value="45" />
+                  </div>
+                </div>
+              </div>
+              <div class="playerAnimationActions" id="playerAnimationActions">
+                <div class="playerAnimationActionBlock" data-action="idle">
+                  <label for="playerAnimationAction-idle">Idle</label>
+                  <select id="playerAnimationAction-idle" data-action="idle"><option value=""></option></select>
+                  <div class="playerAnimationActionSettings" aria-label="Idle animation options">
+                    <div class="playerAnimationActionSetting">
+                      <label for="playerAnimationAction-idle-speed">Speed (05)</label>
+                      <input id="playerAnimationAction-idle-speed" type="number" min="0" max="5" step="0.1" value="1" inputmode="decimal" />
+                    </div>
+                    <div class="playerAnimationActionSettingsRow">
+                      <div class="playerAnimationActionSetting">
+                        <label for="playerAnimationAction-idle-start">Start frame</label>
+                        <input id="playerAnimationAction-idle-start" type="number" min="0" step="1" inputmode="numeric" />
+                      </div>
+                      <div class="playerAnimationActionSetting">
+                        <label for="playerAnimationAction-idle-end">End frame</label>
+                        <input id="playerAnimationAction-idle-end" type="number" min="0" step="1" inputmode="numeric" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="playerAnimationActionBlock" data-action="move">
+                  <label for="playerAnimationAction-move">Move</label>
+                  <select id="playerAnimationAction-move" data-action="move"><option value=""></option></select>
+                  <div class="playerAnimationActionSettings" aria-label="Move animation options">
+                    <div class="playerAnimationActionSetting">
+                      <label for="playerAnimationAction-move-speed">Speed (05)</label>
+                      <input id="playerAnimationAction-move-speed" type="number" min="0" max="5" step="0.1" value="1" inputmode="decimal" />
+                    </div>
+                    <div class="playerAnimationActionSettingsRow">
+                      <div class="playerAnimationActionSetting">
+                        <label for="playerAnimationAction-move-start">Start frame</label>
+                        <input id="playerAnimationAction-move-start" type="number" min="0" step="1" inputmode="numeric" />
+                      </div>
+                      <div class="playerAnimationActionSetting">
+                        <label for="playerAnimationAction-move-end">End frame</label>
+                        <input id="playerAnimationAction-move-end" type="number" min="0" step="1" inputmode="numeric" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="playerAnimationActionBlock" data-action="autoAttack">
+                  <label for="playerAnimationAction-attack">Auto attack</label>
+                  <select id="playerAnimationAction-attack" data-action="autoAttack"><option value=""></option></select>
+                  <div class="playerAnimationActionSettings" aria-label="Auto attack animation options">
+                    <div class="playerAnimationActionSetting">
+                      <label for="playerAnimationAction-attack-speed">Speed (05)</label>
+                      <input id="playerAnimationAction-attack-speed" type="number" min="0" max="5" step="0.1" value="1" inputmode="decimal" />
+                    </div>
+                    <div class="playerAnimationActionSettingsRow">
+                      <div class="playerAnimationActionSetting">
+                        <label for="playerAnimationAction-attack-start">Start frame</label>
+                        <input id="playerAnimationAction-attack-start" type="number" min="0" step="1" inputmode="numeric" />
+                      </div>
+                      <div class="playerAnimationActionSetting">
+                        <label for="playerAnimationAction-attack-end">End frame</label>
+                        <input id="playerAnimationAction-attack-end" type="number" min="0" step="1" inputmode="numeric" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="playerAnimationActionBlock" data-action="cast">
+                  <label for="playerAnimationAction-cast">Cast spell</label>
+                  <select id="playerAnimationAction-cast" data-action="cast"><option value=""></option></select>
+                  <div class="playerAnimationActionSettings" aria-label="Cast spell animation options">
+                    <div class="playerAnimationActionSetting">
+                      <label for="playerAnimationAction-cast-speed">Speed (05)</label>
+                      <input id="playerAnimationAction-cast-speed" type="number" min="0" max="5" step="0.1" value="1" inputmode="decimal" />
+                    </div>
+                    <div class="playerAnimationActionSettingsRow">
+                      <div class="playerAnimationActionSetting">
+                        <label for="playerAnimationAction-cast-start">Start frame</label>
+                        <input id="playerAnimationAction-cast-start" type="number" min="0" step="1" inputmode="numeric" />
+                      </div>
+                      <div class="playerAnimationActionSetting">
+                        <label for="playerAnimationAction-cast-end">End frame</label>
+                        <input id="playerAnimationAction-cast-end" type="number" min="0" step="1" inputmode="numeric" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="playerAnimationActionBlock" data-action="death">
+                  <label for="playerAnimationAction-death">Death</label>
+                  <select id="playerAnimationAction-death" data-action="death"><option value=""></option></select>
+                  <div class="playerAnimationActionSettings" aria-label="Death animation options">
+                    <div class="playerAnimationActionSetting">
+                      <label for="playerAnimationAction-death-speed">Speed (05)</label>
+                      <input id="playerAnimationAction-death-speed" type="number" min="0" max="5" step="0.1" value="1" inputmode="decimal" />
+                    </div>
+                    <div class="playerAnimationActionSettingsRow">
+                      <div class="playerAnimationActionSetting">
+                        <label for="playerAnimationAction-death-start">Start frame</label>
+                        <input id="playerAnimationAction-death-start" type="number" min="0" step="1" inputmode="numeric" />
+                      </div>
+                      <div class="playerAnimationActionSetting">
+                        <label for="playerAnimationAction-death-end">End frame</label>
+                        <input id="playerAnimationAction-death-end" type="number" min="0" step="1" inputmode="numeric" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="playerAnimationActionBlock" data-action="taunt">
+                  <label for="playerAnimationAction-taunt">Taunt</label>
+                  <select id="playerAnimationAction-taunt" data-action="taunt"><option value=""></option></select>
+                  <div class="playerAnimationActionSettings" aria-label="Taunt animation options">
+                    <div class="playerAnimationActionSetting">
+                      <label for="playerAnimationAction-taunt-speed">Speed (05)</label>
+                      <input id="playerAnimationAction-taunt-speed" type="number" min="0" max="5" step="0.1" value="1" inputmode="decimal" />
+                    </div>
+                    <div class="playerAnimationActionSettingsRow">
+                      <div class="playerAnimationActionSetting">
+                        <label for="playerAnimationAction-taunt-start">Start frame</label>
+                        <input id="playerAnimationAction-taunt-start" type="number" min="0" step="1" inputmode="numeric" />
+                      </div>
+                      <div class="playerAnimationActionSetting">
+                        <label for="playerAnimationAction-taunt-end">End frame</label>
+                        <input id="playerAnimationAction-taunt-end" type="number" min="0" step="1" inputmode="numeric" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="playerAnimationStatus">Material colors</div>
+                <div class="playerAnimationMaterials" id="playerAnimationMaterials"></div>
+              </div>
+            </div>
+            <div class="subhint">Assign clips to player actions. Press T in-game to trigger the taunt animation.</div>
+          </div>
+
+          <!-- Cursor -->
+        </section>
+        <section class="sidebar-section" data-section="cursor" aria-label="Cursor">
+          <button class="btn" id="btnCursor" data-icon="" title="Pointer customization">
+            Cursor <span class="hint">Pointer highlights</span>
+          </button>
+          <div class="submenu" id="cursorPane">
+            <div class="formrow"><label>Custom cursor</label><div class="rangeWrap"><button class="formButton" id="cursorToggle" type="button">Disabled</button></div></div>
+            <div class="formrow"><label for="cursorEmoji">Cursor icon</label><input id="cursorEmoji" type="text" inputmode="text" maxlength="4" value=""></div>
+            <div class="formrow"><label>Hover outline</label><div class="rangeWrap"><button class="formButton" id="cursorOutlineToggle" type="button">Enabled</button></div></div>
+            <div class="formrow"><label for="cursorHoverColor">Hover color</label><input id="cursorHoverColor" type="color" value="#7fe3ff"></div>
+            <div class="subhint">Shows a custom cursor on the stage and outlines interactive enemies under your pointer.</div>
+          </div>
+
+          <!-- Pings -->
+        </section>
+        <section class="sidebar-section" data-section="pings" aria-label="Pings">
+          <button class="btn" id="btnPings" data-icon="" title="Quick map pings">
+            Pings <span class="hint">Alert your team</span>
+          </button>
+          <div class="submenu" id="pingPane">
+            <div class="formrow"><label for="pingOnMyWay">On my way</label><div class="rangeWrap"><input id="pingOnMyWay" type="text" inputmode="text" maxlength="4" value=""><button class="formButton" id="pingOnMyWayTrigger" type="button">Drop ping</button></div></div>
+            <div class="formrow"><label for="pingEnemyMissing">Enemy missing</label><div class="rangeWrap"><input id="pingEnemyMissing" type="text" inputmode="text" maxlength="4" value=""><button class="formButton" id="pingEnemyMissingTrigger" type="button">Drop ping</button></div></div>
+            <div class="formrow"><label for="pingAssistMe">Assist me</label><div class="rangeWrap"><input id="pingAssistMe" type="text" inputmode="text" maxlength="4" value=""><button class="formButton" id="pingAssistMeTrigger" type="button">Drop ping</button></div></div>
+            <div class="formrow"><label for="pingTarget">Target call</label><div class="rangeWrap"><input id="pingTarget" type="text" inputmode="text" maxlength="4" value=""><button class="formButton" id="pingTargetTrigger" type="button">Drop ping</button></div></div>
+            <div class="subhint">Pings use your cursors last position. Adjust the emoji to personalize each alert.</div>
+          </div>
+
+          <!-- Keybinds -->
+        </section>
+        <section class="sidebar-section" data-section="keybinds" aria-label="Keybinds">
+          <button class="btn" id="btnKeybinds" data-icon="" title="Spell casting keybinds">
+            Keybinds <span class="hint">Casting modifiers</span>
+          </button>
+          <div class="submenu" id="keybindPane">
+            <div class="formrow"><label for="spellCastDefault">Default spell cast type</label><select id="spellCastDefault"><option value="quick">Quick cast (default)</option><option value="normal">Normal cast</option><option value="quickIndicator">Quick cast with indicator</option><option value="none">None</option></select></div>
+            <div class="formrow"><label>Normal cast modifier</label><button type="button" class="formButton" id="spellCastNormalBind"></button></div>
+            <div class="subhint">Hold to preview a skill shot, then press again or left-click to confirm. Right-click cancels.</div>
+            <div class="formrow"><label>Quick cast modifier</label><button type="button" class="formButton" id="spellCastQuickBind"></button></div>
+            <div class="subhint">Hold to force abilities to fire instantly on key press.</div>
+            <div class="formrow"><label>Quick indicator modifier</label><button type="button" class="formButton" id="spellCastIndicatorBind"></button></div>
+            <div class="subhint">Hold to preview the indicator, then release the ability key to cast.</div>
+            <div class="formrow"><label>Attack move key</label><button type="button" class="formButton" id="attackMoveBind">A</button></div>
+            <div class="subhint">Issue an attack move toward your cursor and target the closest enemy automatically.</div>
+            <div class="formrow"><label>Ping wheel key</label><button type="button" class="formButton" id="pingWheelBind">G</button></div>
+            <div class="subhint">Hold to open the ping wheel, then drag toward a direction to choose a ping.</div>
+          </div>
+
+          <!-- Ability bar -->
+        </section>
+        <section class="sidebar-section" data-section="ability-bar" aria-label="Ability Bar">
+          <button class="btn" id="btnAbilityBar" data-icon="" title="Ability bar settings">
+            Ability Bar <span class="hint">Configure HUD</span>
+          </button>
+          <div class="submenu" id="abilityPane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="abilityConfigLoad" type="button">Load setup</button><button class="formButton" id="abilityConfigSave" type="button">Save setup</button></div></div>
+            <input id="abilityConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <div class="formrow"><label for="abilityBarState.count">Number of abilities (020)</label><input type="number" id="abilityBarState.count" min="0" max="20" value="20"></div>
+            <div class="formrow"><label for="abilityBarState.scale">Ability bar size (04)</label><input type="number" id="abilityBarState.scale" min="0" max="4" step="0.1" value="1"></div>
+            <div class="formrow"><label for="abilityBarState.orientation">Ability bar orientation</label><select id="abilityBarState.orientation"><option value="horizontal">Horizontal</option><option value="vertical">Vertical</option></select></div>
+            <div class="formrow"><label for="abilityBarState.healthPlacement.horizontal">Health bar position (horizontal)</label><select id="abilityBarState.healthPlacement.horizontal"><option value="bottom" selected>Bottom</option><option value="top">Top</option></select></div>
+            <div class="formrow"><label for="abilityBarState.healthPlacement.vertical">Health bar position (vertical)</label><select id="abilityBarState.healthPlacement.vertical"><option value="right" selected>Right</option><option value="left">Left</option></select></div>
+            <div class="formrow"><label for="abilityBarState.healthPlacement.textVertical">Health text (vertical)</label><select id="abilityBarState.healthPlacement.textVertical"><option value="top" selected>Above bar</option><option value="bottom">Below bar</option></select></div>
+            <div class="formrow"><label for="abilityBarState.statsPlacementVertical">Stats panel position (vertical)</label><select id="abilityBarState.statsPlacementVertical"><option value="top" selected>Top</option><option value="bottom">Bottom</option></select></div>
+            <div class="formrow"><label for="abilityTunables.spellSpeedScale">Spell speed multiplier (010)</label><input type="number" id="abilityTunables.spellSpeedScale" min="0" max="10" step="0.1" value="1"></div>
+            <div class="formrow"><label for="abilityTunables.spellSizeScale">Spell size multiplier (010)</label><input type="number" id="abilityTunables.spellSizeScale" min="0" max="10" step="0.1" value="1"></div>
+            <button class="subbtn" id="btnSaveSpells" type="button">Save spell configs</button>
+            <div class="subhint">Set how many slots appear on the HUD and scale their size. A size of 0 hides the bar.</div>
+          </div>
+
+          <!-- Minimap -->
+        </section>
+        <section class="sidebar-section" data-section="minimap" aria-label="Minimap">
+          <button class="btn" id="btnMinimap" data-icon="" title="Minimap settings">
+            Minimap <span class="hint">Map overview</span>
+          </button>
+          <div class="submenu" id="minimapPane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="minimapConfigLoad" type="button">Load setup</button><button class="formButton" id="minimapConfigSave" type="button">Save setup</button></div></div>
+            <input id="minimapConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <div class="formrow"><label for="minimapScale">Minimap size (05)</label><input type="number" id="minimapScale" min="0" max="5" step="0.1" value="1"></div>
+            <div class="formrow"><label for="minimapClickToMove">Click-to-move orders</label><select id="minimapClickToMove"><option value="enabled" selected>Enabled</option><option value="disabled">Disabled</option></select></div>
+            <div class="formrow"><label for="minimapClickThrough">Click-through</label><select id="minimapClickThrough"><option value="blocked" selected>Blocked</option><option value="allow">Allow</option></select></div>
+            <div class="subhint">Set the minimap scale. A value of 0 hides it entirely.</div>
+            <div class="subhint">Disable click-to-move to prevent issuing orders from the minimap, or allow click-through so stage clicks pass beneath it.</div>
+          </div>
+
+          <!-- Gold -->
+        </section>
+        <section class="sidebar-section" data-section="gold" aria-label="Gold">
+          <button class="btn" id="btnGold" data-icon="&#x1F4B0;" title="Gold settings">
+            Gold <span class="hint">Economy tuning...</span>
+          </button>
+          <div class="submenu" id="goldPane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="goldConfigLoad" type="button">Load setup</button><button class="formButton" id="goldConfigSave" type="button">Save setup</button></div></div>
+            <input id="goldConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <div class="formrow"><label for="goldState.perSecond">Passive gold (per second, 0100)</label><input type="number" id="goldState.perSecond" min="0" max="100" step="0.1" value="15"></div>
+            <div class="formrow"><label for="goldState.perKill">Gold per execute (0100)</label><input type="number" id="goldState.perKill" min="0" max="100" value="0"></div>
+            <div class="subhint">Earn passive gold while the timer runs. Executing a minion with the final blow grants bonus gold.</div>
+          </div>
+
+          <!-- Score SETTINGS ONLY (no live score numbers here) -->
+        </section>
+        <section class="sidebar-section" data-section="score" aria-label="Score Rules">
+          <button class="btn" id="btnScore" data-icon="" title="Score settings">
+            Score Rules <span class="hint">Points & target</span>
+          </button>
+          <div class="submenu" id="scorePane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="scoreConfigLoad" type="button">Load setup</button><button class="formButton" id="scoreConfigSave" type="button">Save setup</button></div></div>
+            <input id="scoreConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <div class="formrow"><label for="scoreState.pointsPer">Points per minion (110)</label><input type="number" id="scoreState.pointsPer" min="1" max="10" value="1"></div>
+            <div class="formrow"><label for="scoreState.winTarget">Score to win (11000)</label><input type="number" id="scoreState.winTarget" min="1" max="1000" value="50"></div>
+            <button class="subbtn" id="resetScore">Reset scores</button>
+            <div class="subhint">A team earns points when its minion enters the <b>opponents</b> portal.</div>
+          </div>
+
+          <!-- UI Layout -->
+        </section>
+        <section class="sidebar-section" data-section="ui-layout" aria-label="UI Layout">
+          <button class="btn" id="btnUiLayout" data-icon="" title="UI layout settings">
+            UI Layout <span class="hint">Arrange HUD</span>
+          </button>
+          <div class="submenu" id="uiLayoutPane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="uiLayoutConfigLoad" type="button">Load setup</button><button class="formButton" id="uiLayoutConfigSave" type="button">Save setup</button></div></div>
+            <input id="uiLayoutConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <div class="subhint">Assign HUD widgets to one of nine anchors or hide them.</div>
+            <div class="formrow"><label for="uiSlotGold">Gold counter</label><select id="uiSlotGold"></select></div>
+            <div class="formrow"><label for="uiSlotScore">Score display</label><select id="uiSlotScore"></select></div>
+            <div class="formrow"><label for="uiSlotTimer">Game timer</label><select id="uiSlotTimer"></select></div>
+            <div class="formrow"><label for="uiSlotAbility">Ability & stats dock</label><select id="uiSlotAbility"></select></div>
+            <div class="formrow"><label for="uiSlotMinimap">Minimap</label><select id="uiSlotMinimap"></select></div>
+            <div class="subhint">Offsets shift anchors horizontally (H) and vertically (V) up to 500px.</div>
+            <div class="formrow"><label>Top Left offset</label><div class="offsetGroup"><label><span>H</span><input type="number" id="uiOffsetTopLeftX" min="-500" max="500" value="16"></label><label><span>V</span><input type="number" id="uiOffsetTopLeftY" min="-500" max="500" value="16"></label></div></div>
+            <div class="formrow"><label>Top Middle offset</label><div class="offsetGroup"><label><span>H</span><input type="number" id="uiOffsetTopMiddleX" min="-500" max="500" value="0"></label><label><span>V</span><input type="number" id="uiOffsetTopMiddleY" min="-500" max="500" value="16"></label></div></div>
+            <div class="formrow"><label>Top Right offset</label><div class="offsetGroup"><label><span>H</span><input type="number" id="uiOffsetTopRightX" min="-500" max="500" value="16"></label><label><span>V</span><input type="number" id="uiOffsetTopRightY" min="-500" max="500" value="16"></label></div></div>
+            <div class="formrow"><label>Center Left offset</label><div class="offsetGroup"><label><span>H</span><input type="number" id="uiOffsetCenterLeftX" min="-500" max="500" value="16"></label><label><span>V</span><input type="number" id="uiOffsetCenterLeftY" min="-500" max="500" value="0"></label></div></div>
+            <div class="formrow"><label>Center Middle offset</label><div class="offsetGroup"><label><span>H</span><input type="number" id="uiOffsetCenterMiddleX" min="-500" max="500" value="0"></label><label><span>V</span><input type="number" id="uiOffsetCenterMiddleY" min="-500" max="500" value="0"></label></div></div>
+            <div class="formrow"><label>Center Right offset</label><div class="offsetGroup"><label><span>H</span><input type="number" id="uiOffsetCenterRightX" min="-500" max="500" value="16"></label><label><span>V</span><input type="number" id="uiOffsetCenterRightY" min="-500" max="500" value="0"></label></div></div>
+            <div class="formrow"><label>Bottom Left offset</label><div class="offsetGroup"><label><span>H</span><input type="number" id="uiOffsetBottomLeftX" min="-500" max="500" value="16"></label><label><span>V</span><input type="number" id="uiOffsetBottomLeftY" min="-500" max="500" value="16"></label></div></div>
+            <div class="formrow"><label>Bottom Middle offset</label><div class="offsetGroup"><label><span>H</span><input type="number" id="uiOffsetBottomMiddleX" min="-500" max="500" value="0"></label><label><span>V</span><input type="number" id="uiOffsetBottomMiddleY" min="-500" max="500" value="16"></label></div></div>
+            <div class="formrow"><label>Bottom Right offset</label><div class="offsetGroup"><label><span>H</span><input type="number" id="uiOffsetBottomRightX" min="-500" max="500" value="16"></label><label><span>V</span><input type="number" id="uiOffsetBottomRightY" min="-500" max="500" value="16"></label></div></div>
+          </div>
+        </section>
+
+        <div class="settingHelp" id="settingHelp" role="status" aria-live="polite">
+          <span class="settingHelpTitle" id="settingHelpTitle">Settings</span>
+          <span class="settingHelpBody" id="settingHelpBody">Hover a control to learn what it does.</span>
+        </div>
+
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="stage" id="stage">
+        <div class="view" id="view">
+          <img id="hitbox" alt="Hitbox map" src="" aria-hidden="true" />
+          <img id="map" alt="Map" src="" />
+          <canvas id="layer" width="1920" height="1080"></canvas>
+          <div class="playerModelAnchor" id="playerModelAnchor" data-active="false">
+            <canvas id="playerModelCanvas" class="playerModelCanvas" width="256" height="256"></canvas>
+          </div>
+          <div class="playerFloatHud" id="playerFloatHud" data-team="blue" aria-hidden="true">
+            <div class="playerPrayerIcons" id="playerPrayerIcons" aria-hidden="true"></div>
+            <div class="playerFloatTrack">
+              <div class="playerFloatFill" id="playerFloatFill"></div>
+              <div class="playerFloatText" id="playerFloatText">1000</div>
+            </div>
+            <div class="playerAttackReadyBar is-disabled" id="playerAttackReadyBar" aria-hidden="true">
+              <div class="playerAttackReadyFill" id="playerAttackReadyFill"></div>
+            </div>
+            <div class="playerStateIcons" id="playerStateIcons" aria-hidden="true"></div>
+          </div>
+          <div class="playerFloatHud" id="practiceDummyHud" data-team="red" aria-hidden="true">
+            <div class="playerFloatTrack">
+              <div class="playerFloatFill" id="practiceDummyFill"></div>
+              <div class="playerFloatText" id="practiceDummyText">1000</div>
+            </div>
+            <div class="playerAttackReadyBar is-disabled" id="practiceDummyAttackBar" aria-hidden="true" hidden>
+              <div class="playerAttackReadyFill" id="practiceDummyAttackFill"></div>
+            </div>
+            <div class="playerStateIcons" id="practiceDummyIcons" aria-hidden="true"></div>
+          </div>
+          <div class="playerFloatHud monsterHud" id="monsterHud" aria-hidden="true">
+            <div class="playerFloatTrack">
+              <div class="playerFloatFill" id="monsterFill"></div>
+              <div class="playerFloatText" id="monsterText">0</div>
+            </div>
+            <div class="monsterAbilityQueue" id="monsterAbilityQueue" aria-hidden="true"></div>
+          </div>
+        </div>
+    <div class="stageCursor" id="stageCursor" data-visible="false"><span id="stageCursorIcon"></span></div>
+    <div class="hudOverlay" id="hudOverlay">
+      <div class="scoreOverlay" id="scoreOverlay" aria-live="polite">
+            <div class="scoreTeam"><span class="pill blue"></span><span>Blue</span><span class="scoreVal" id="scoreBlue">0</span></div>
+            <div></div>
+            <div class="scoreTeam"><span class="pill red"></span><span>Red</span><span class="scoreVal" id="scoreRed">0</span></div>
+          </div>
+          <div class="timer" id="timer">00:00</div>
+          <div class="hudCornerGroup" id="hudCornerGroup">
+            <div class="goldCounter" id="goldCounter" aria-live="polite"> <span id="goldValue">0</span></div>
+          </div>
+          <div class="hudStatsAnchor" id="hudStatsAnchor" data-stage-ignore-click="true">
+            <div class="hudStatsAbilityGroup" id="hudStatsAbilityGroup">
+              <div class="hudStatsDock" id="hudStatsDock" data-collapsed="false">
+                <button type="button" class="hudStatsToggle" id="hudStatsToggle" aria-label="Collapse stats" aria-expanded="true" aria-controls="hudStatsContent">
+                  <span class="hudStatsToggleIcon" aria-hidden="true"></span>
+                </button>
+                <div class="hudStatsPanel" id="hudStatsPanel" aria-live="polite">
+                  <div class="hudStatsContent" id="hudStatsContent">
+                    <div class="hudStat" title="Attack speed">
+                      <span class="hudStatLabel">as</span>
+                      <span class="hudStatValue" id="hudAs">1.00s</span>
+                    </div>
+                    <div class="hudStat" title="Attack windup">
+                      <span class="hudStatLabel">aw</span>
+                      <span class="hudStatValue" id="hudAw">0.25s</span>
+                    </div>
+                    <div class="hudStat" title="Attack range">
+                      <span class="hudStatLabel">ar</span>
+                      <span class="hudStatValue" id="hudAr">200</span>
+                    </div>
+                    <div class="hudStat" title="Damage">
+                      <span class="hudStatLabel">dmg</span>
+                      <span class="hudStatValue" id="hudDmg">10</span>
+                    </div>
+                    <div class="hudStat" title="Movement speed">
+                      <span class="hudStatLabel">ms</span>
+                      <span class="hudStatValue" id="hudMs">240</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="hudAbilityDock" id="hudAbilityDock">
+                <div class="hudAbilityStack" id="hudAbilityStack">
+                  <div class="hudAbilityBarWrap" id="hudAbilityBarWrap">
+                    <div class="abilityBar" id="abilityBar" aria-hidden="true" role="group"></div>
+                  </div>
+                  <div class="hudAbilityVitals" id="hudAbilityVitalsWrap">
+                    <div class="hudVitals" id="hudVitals" data-team="blue" aria-live="polite">
+                      <div class="hudVitalsBar" id="hudVitalsBar">
+                        <div class="hudHealthFill" id="hudHpFill"></div>
+                        <div class="hudHpText" id="hudHpText">1000 / 1000</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="abilityRepo" id="abilityRepo" aria-hidden="true" role="dialog" aria-modal="false" data-stage-ignore-click="true">
+            <div class="abilityRepoHeader">
+              <div>
+                <div class="abilityRepoTitle">Spell Repository</div>
+                <div class="abilityRepoSubtitle" id="abilityRepoSubtitle">Select a spell to assign.</div>
+              </div>
+              <button type="button" class="abilityRepoClose" id="abilityRepoClose" aria-label="Close spell repository">&times;</button>
+            </div>
+            <div class="abilityRepoBody">
+              <div class="spellList" id="spellList" role="listbox" aria-label="Available spells"></div>
+              <div class="spellEditor" id="spellEditor">
+                <div class="spellEditorPlaceholder" id="spellEditorPlaceholder">Right-click a spell to edit its attributes.</div>
+                <div class="spellEditorForm" id="spellEditorForm" hidden></div>
+              </div>
+            </div>
+          </div>
+          <div class="winBanner" id="winBanner">Blue wins!</div>
+          <canvas id="minimap" width="220" height="220" aria-hidden="true" data-stage-ignore-click="true"></canvas>
+        </div>
+      </div>
+    </main>
+    <button class="sidebar__fab" id="sbFab" aria-label="Open menu">
+      <span class="sidebar__fab-icon" aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <div class="settingsSearchOverlay" id="settingsSearch" data-open="false" aria-hidden="true">
+    <div class="settingsSearchDialog" role="dialog" aria-modal="true" aria-labelledby="settingsSearchLabel">
+      <div class="settingsSearchHeader">
+        <div class="settingsSearchInputWrap">
+          <label class="settingsSearchInputLabel" id="settingsSearchLabel" for="settingsSearchInput">Search settings</label>
+          <input id="settingsSearchInput" class="settingsSearchInput" type="text" placeholder="Search settings" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="settingsSearchResults" aria-autocomplete="list" />
+        </div>
+        <button type="button" class="settingsSearchHelpButton" id="settingsSearchHelpBtn" aria-haspopup="dialog" aria-controls="settingsSearchHelp" aria-label="Show search tips">?</button>
+      </div>
+      <div class="settingsSearchFacets" id="settingsSearchFacets" aria-live="polite"></div>
+      <div class="settingsSearchBody">
+        <div class="settingsSearchResults" id="settingsSearchResults" role="listbox" aria-labelledby="settingsSearchLabel"></div>
+        <div class="settingsSearchEmpty" id="settingsSearchEmpty" hidden>
+          <div class="settingsSearchEmptyPrimary" id="settingsSearchEmptyPrimary">No settings found.</div>
+          <div class="settingsSearchEmptySecondary" id="settingsSearchEmptySecondary">Try different keywords or add a filter like <code>tag:camera</code>.</div>
+          <button type="button" class="settingsSearchAskBtn" id="settingsSearchAskBtn">Ask for help</button>
+        </div>
+      </div>
+      <div class="settingsSearchFooter">
+        <div class="settingsSearchStatus" id="settingsSearchStatus" aria-live="polite"></div>
+        <div class="settingsSearchRecents" id="settingsSearchRecents" aria-label="Recent queries"></div>
+      </div>
+    </div>
+    <div class="settingsSearchHelp" id="settingsSearchHelp" hidden role="dialog" aria-modal="false" aria-labelledby="settingsSearchHelpTitle">
+      <div class="settingsSearchHelpHeader">
+        <div class="settingsSearchHelpTitle" id="settingsSearchHelpTitle">Search tips</div>
+        <button type="button" class="settingsSearchHelpClose" id="settingsSearchHelpClose" aria-label="Close search tips"></button>
+      </div>
+      <div class="settingsSearchHelpBody">
+        <p>Find any setting in under a second. Use filters to narrow results:</p>
+        <ul>
+          <li><code>tag:camera</code>, <code>tag:minions</code>, <code>tag:recall</code></li>
+          <li><code>type:number</code>, <code>type:boolean</code>, <code>scope:map</code></li>
+          <li><code>experimental:true</code> to surface prototypes</li>
+        </ul>
+        <p>Typos are forgiventry <code>recal tiem</code>. Arrow keys move, <kbd>Enter</kbd> opens, <kbd>Alt+Enter</kbd> toggles booleans.</p>
+      </div>
+    </div>
+  </div>
+
+<!-- Main module -->
+<script type="module" src="./app.js"></script>
+</body>
+</html>

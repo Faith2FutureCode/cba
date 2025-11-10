@@ -25,6 +25,16 @@
         <div class="sidebar__title">MakaMoba</div>
       </div>
       <nav class="sidebar__content" id="sidebarContent" aria-label="Simulation controls">
+        <div class="sidebar__search">
+          <button type="button" class="sidebar__searchButton" id="sidebarSearchButton" aria-label="Search settings">
+            <span class="sidebar__searchIcon" aria-hidden="true"></span>
+            <span class="sidebar__searchText">Search settings</span>
+            <span class="sidebar__searchShortcut" aria-hidden="true">⌘K</span>
+          </button>
+          <div class="sidebar__searchHint">Press Ctrl+K on Windows or ⌘K on Mac.</div>
+        </div>
+        <div class="sidebar-category" data-category="project">
+          <h2 class="sidebar-category__title">Project Setup</h2>
         <section class="sidebar-section" data-section="play" aria-label="Start">
           <button class="btn" id="btnPlay" data-icon="" title="Start/Stop">
              Start <span class="hint">Begin waves</span>
@@ -60,6 +70,9 @@
             <input id="gameStateImportFile" type="file" accept="application/json,.json" style="display:none" />
           </div>
         </section>
+        </div>
+        <div class="sidebar-category" data-category="world">
+          <h2 class="sidebar-category__title">World Tools</h2>
         <section class="sidebar-section" data-section="colliders" aria-label="Collision">
           <button class="btn" id="btnColliders" data-icon="" title="Collision editor">
             Collision <span class="hint">Place blockers</span>
@@ -102,9 +115,114 @@
             <div class="formrow"><label>Selection</label><div class="rangeWrap"><button class="formButton" id="visionDelete" type="button" disabled>Delete selected</button></div></div>
             <div class="colliderList" id="visionList" role="listbox" aria-label="Vision shapes"></div>
           </div>
-
-          <!-- Minions -->
         </section>
+        <section class="sidebar-section" data-section="camera" aria-label="Camera">
+          <button class="btn" id="btnCamera" data-icon="" title="Camera settings" data-help-title="Camera options" data-help-text="Tune how the tactical camera follows your champion and how you scout the battlefield.">
+            Camera <span class="hint">Follow behavior...</span>
+          </button>
+          <div class="submenu" id="cameraPane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="cameraConfigLoad" type="button">Load setup</button><button class="formButton" id="cameraConfigSave" type="button">Save setup</button></div></div>
+            <input id="cameraConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <div class="formrow" data-help-title="Camera mode" data-help-text="Switch between locked, semi-locked, or completely free camera movement.">
+              <label for="cameraMode">Camera mode</label>
+              <select id="cameraMode">
+                <option value="locked">Locked</option>
+                <option value="semi">Semi-locked</option>
+                <option value="free">Unlocked</option>
+              </select>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Follow responsiveness" data-help-text="Control how quickly the camera catches up to your champion after they move.">
+              <label for="cameraFollowLag">Follow responsiveness</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraFollowLag" min="0" max="200" value="0">
+                <span class="rangeValue" id="cameraFollowLagDisplay">Instant</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Forward offset" data-help-text="Bias the camera slightly in the direction of motion so you can see more of the threats ahead.">
+              <label for="cameraLead">Forward offset</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraLead" min="0" max="3000" value="0">
+                <span class="rangeValue" id="cameraLeadDisplay">0px</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Horizontal offset" data-help-text="Shift the camera left or right relative to your champion using a percentage of the current view width.">
+              <label for="cameraHorizontalOffset">Horizontal offset</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraHorizontalOffset" min="-100" max="100" value="0">
+                <span class="rangeValue" id="cameraHorizontalOffsetDisplay">Centered</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Vertical offset" data-help-text="Shift the camera up or down relative to your champion using a percentage of the current view height.">
+              <label for="cameraVerticalOffset">Vertical offset</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraVerticalOffset" min="-100" max="100" value="0">
+                <span class="rangeValue" id="cameraVerticalOffsetDisplay">Centered</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Edge scroll margin" data-help-text="Set how close to the screen edge the mouse must be before the camera begins panning. Set to zero to disable edge scroll.">
+              <label for="cameraEdgeMargin">Edge scroll margin</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraEdgeMargin" min="0" max="3000" value="0">
+                <span class="rangeValue" id="cameraEdgeMarginDisplay">0px</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Edge scroll speed" data-help-text="How fast the camera travels while edge scrolling is active.">
+              <label for="cameraEdgeSpeed">Edge scroll speed</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraEdgeSpeed" min="0" max="3000" step="10" value="0">
+                <span class="rangeValue" id="cameraEdgeSpeedDisplay">Off</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Recentering delay" data-help-text="How long the camera keeps your manual offset before easing back toward your champion in semi-locked mode.">
+              <label for="cameraRecenterDelay">Recentering delay</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraRecenterDelay" min="0" max="1000" step="10" value="0">
+                <span class="rangeValue" id="cameraRecenterDelayDisplay">0s</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Semi-lock leash" data-help-text="Limit how far the camera can drift off your champion before it softly reels back in. Set to zero for unlimited drift.">
+              <label for="cameraManualLeash">Semi-lock leash</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraManualLeash" min="0" max="3000" step="10" value="0">
+                <span class="rangeValue" id="cameraManualLeashDisplay">Unlimited</span>
+              </div>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Zoom level" data-help-text="Adjust the tactical camera zoom. Lower values pull out for a wider view; higher values zoom in.">
+              <label for="cameraZoom">Zoom level</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraZoom" min="0" max="500" value="100">
+                <span class="rangeValue" id="cameraZoomDisplay">100%</span>
+              </div>
+            </div>
+            <div class="formrow" data-help-title="Lock zooming in" data-help-text="Prevent the camera from zooming in closer than the current level." data-setting-id="camera.zoomInLock" data-setting-type="boolean" data-setting-tags="camera,zoom" data-setting-aliases="zoom lock,lock zoom in" data-setting-section="Zoom" data-setting-control="cameraZoomInLock">
+              <label for="cameraZoomInLock">Zoom in lock</label>
+              <button type="button" class="formButton" id="cameraZoomInLock">Unlocked</button>
+            </div>
+            <div class="formrow" data-help-title="Lock zooming out" data-help-text="Prevent the camera from zooming out farther than the current level." data-setting-id="camera.zoomOutLock" data-setting-type="boolean" data-setting-tags="camera,zoom" data-setting-aliases="zoom lock,lock zoom out" data-setting-section="Zoom" data-setting-control="cameraZoomOutLock">
+              <label for="cameraZoomOutLock">Zoom out lock</label>
+              <button type="button" class="formButton" id="cameraZoomOutLock">Unlocked</button>
+            </div>
+            <div class="formrow rangeRow" data-help-title="Zoom wheel sensitivity" data-help-text="Adjust how strong the zoom wheel feels. Set to zero to disable wheel zooming altogether.">
+              <label for="cameraWheelSensitivity">Zoom wheel sensitivity</label>
+              <div class="rangeWrap">
+                <input type="number" id="cameraWheelSensitivity" min="0" max="40" value="20">
+                <span class="rangeValue" id="cameraWheelSensitivityDisplay">20%/step</span>
+              </div>
+            </div>
+            <div class="formrow" data-help-title="Camera lock key" data-help-text="Press this key to toggle between your locked view and your preferred free mode.">
+              <label for="cameraLockBind">Camera lock key</label>
+              <button type="button" class="formButton" id="cameraLockBind">Space</button>
+            </div>
+            <div class="formrow" data-help-title="Quick recenter" data-help-text="Snap the camera back to your champion immediately.">
+              <label for="cameraRecenterBtn">Quick recenter</label>
+              <button type="button" class="formButton" id="cameraRecenterBtn">Recenter now</button>
+            </div>
+            <div class="subhint" data-help-title="Camera tips" data-help-text="Hover the camera controls to learn how each option changes the tactical view.">Drag with the middle mouse button or use edge scrolling to scout. Press the lock key to snap back.</div>
+          </div>
+        </section>
+        </div>
+        <div class="sidebar-category" data-category="characters">
+          <h2 class="sidebar-category__title">Characters &amp; Combat</h2>
         <section class="sidebar-section" data-section="minions" aria-label="Minions">
           <button class="btn" id="btnMinions" data-icon="" title="Minions">
             Minions <span class="hint">Create spawns</span>
@@ -250,112 +368,6 @@
             <div class="formrow"><label for="monsterIconGreen">Green emoji</label><input type="text" id="monsterIconGreen" maxlength="6" value=""></div>
             <div class="formrow"><label for="monsterIconBlue">Blue emoji</label><input type="text" id="monsterIconBlue" maxlength="6" value=""></div>
             <div class="formrow"><label for="monsterIconRed">Red emoji</label><input type="text" id="monsterIconRed" maxlength="6" value=""></div>
-          </div>
-
-          <!-- Camera -->
-        </section>
-        <section class="sidebar-section" data-section="camera" aria-label="Camera">
-          <button class="btn" id="btnCamera" data-icon="" title="Camera settings" data-help-title="Camera options" data-help-text="Tune how the tactical camera follows your champion and how you scout the battlefield.">
-            Camera <span class="hint">Follow behavior...</span>
-          </button>
-          <div class="submenu" id="cameraPane">
-            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="cameraConfigLoad" type="button">Load setup</button><button class="formButton" id="cameraConfigSave" type="button">Save setup</button></div></div>
-            <input id="cameraConfigFile" type="file" accept="application/json,.json" style="display:none" />
-            <div class="formrow" data-help-title="Camera mode" data-help-text="Switch between locked, semi-locked, or completely free camera movement.">
-              <label for="cameraMode">Camera mode</label>
-              <select id="cameraMode">
-                <option value="locked">Locked</option>
-                <option value="semi">Semi-locked</option>
-                <option value="free">Unlocked</option>
-              </select>
-            </div>
-            <div class="formrow rangeRow" data-help-title="Follow responsiveness" data-help-text="Control how quickly the camera catches up to your champion after they move.">
-              <label for="cameraFollowLag">Follow responsiveness</label>
-              <div class="rangeWrap">
-                <input type="number" id="cameraFollowLag" min="0" max="200" value="0">
-                <span class="rangeValue" id="cameraFollowLagDisplay">Instant</span>
-              </div>
-            </div>
-            <div class="formrow rangeRow" data-help-title="Forward offset" data-help-text="Bias the camera slightly in the direction of motion so you can see more of the threats ahead.">
-              <label for="cameraLead">Forward offset</label>
-              <div class="rangeWrap">
-                <input type="number" id="cameraLead" min="0" max="3000" value="0">
-                <span class="rangeValue" id="cameraLeadDisplay">0px</span>
-              </div>
-            </div>
-            <div class="formrow rangeRow" data-help-title="Horizontal offset" data-help-text="Shift the camera left or right relative to your champion using a percentage of the current view width.">
-              <label for="cameraHorizontalOffset">Horizontal offset</label>
-              <div class="rangeWrap">
-                <input type="number" id="cameraHorizontalOffset" min="-100" max="100" value="0">
-                <span class="rangeValue" id="cameraHorizontalOffsetDisplay">Centered</span>
-              </div>
-            </div>
-            <div class="formrow rangeRow" data-help-title="Vertical offset" data-help-text="Shift the camera up or down relative to your champion using a percentage of the current view height.">
-              <label for="cameraVerticalOffset">Vertical offset</label>
-              <div class="rangeWrap">
-                <input type="number" id="cameraVerticalOffset" min="-100" max="100" value="0">
-                <span class="rangeValue" id="cameraVerticalOffsetDisplay">Centered</span>
-              </div>
-            </div>
-            <div class="formrow rangeRow" data-help-title="Edge scroll margin" data-help-text="Set how close to the screen edge the mouse must be before the camera begins panning. Set to zero to disable edge scroll.">
-              <label for="cameraEdgeMargin">Edge scroll margin</label>
-              <div class="rangeWrap">
-                <input type="number" id="cameraEdgeMargin" min="0" max="3000" value="0">
-                <span class="rangeValue" id="cameraEdgeMarginDisplay">0px</span>
-              </div>
-            </div>
-            <div class="formrow rangeRow" data-help-title="Edge scroll speed" data-help-text="How fast the camera travels while edge scrolling is active.">
-              <label for="cameraEdgeSpeed">Edge scroll speed</label>
-              <div class="rangeWrap">
-                <input type="number" id="cameraEdgeSpeed" min="0" max="3000" step="10" value="0">
-                <span class="rangeValue" id="cameraEdgeSpeedDisplay">Off</span>
-              </div>
-            </div>
-            <div class="formrow rangeRow" data-help-title="Recentering delay" data-help-text="How long the camera keeps your manual offset before easing back toward your champion in semi-locked mode.">
-              <label for="cameraRecenterDelay">Recentering delay</label>
-              <div class="rangeWrap">
-                <input type="number" id="cameraRecenterDelay" min="0" max="1000" step="10" value="0">
-                <span class="rangeValue" id="cameraRecenterDelayDisplay">0s</span>
-              </div>
-            </div>
-            <div class="formrow rangeRow" data-help-title="Semi-lock leash" data-help-text="Limit how far the camera can drift off your champion before it softly reels back in. Set to zero for unlimited drift.">
-              <label for="cameraManualLeash">Semi-lock leash</label>
-              <div class="rangeWrap">
-                <input type="number" id="cameraManualLeash" min="0" max="3000" step="10" value="0">
-                <span class="rangeValue" id="cameraManualLeashDisplay">Unlimited</span>
-              </div>
-            </div>
-            <div class="formrow rangeRow" data-help-title="Zoom level" data-help-text="Adjust the tactical camera zoom. Lower values pull out for a wider view; higher values zoom in.">
-              <label for="cameraZoom">Zoom level</label>
-              <div class="rangeWrap">
-                <input type="number" id="cameraZoom" min="0" max="500" value="100">
-                <span class="rangeValue" id="cameraZoomDisplay">100%</span>
-              </div>
-            </div>
-            <div class="formrow" data-help-title="Lock zooming in" data-help-text="Prevent the camera from zooming in closer than the current level." data-setting-id="camera.zoomInLock" data-setting-type="boolean" data-setting-tags="camera,zoom" data-setting-aliases="zoom lock,lock zoom in" data-setting-section="Zoom" data-setting-control="cameraZoomInLock">
-              <label for="cameraZoomInLock">Zoom in lock</label>
-              <button type="button" class="formButton" id="cameraZoomInLock">Unlocked</button>
-            </div>
-            <div class="formrow" data-help-title="Lock zooming out" data-help-text="Prevent the camera from zooming out farther than the current level." data-setting-id="camera.zoomOutLock" data-setting-type="boolean" data-setting-tags="camera,zoom" data-setting-aliases="zoom lock,lock zoom out" data-setting-section="Zoom" data-setting-control="cameraZoomOutLock">
-              <label for="cameraZoomOutLock">Zoom out lock</label>
-              <button type="button" class="formButton" id="cameraZoomOutLock">Unlocked</button>
-            </div>
-            <div class="formrow rangeRow" data-help-title="Zoom wheel sensitivity" data-help-text="Adjust how strong the zoom wheel feels. Set to zero to disable wheel zooming altogether.">
-              <label for="cameraWheelSensitivity">Zoom wheel sensitivity</label>
-              <div class="rangeWrap">
-                <input type="number" id="cameraWheelSensitivity" min="0" max="40" value="20">
-                <span class="rangeValue" id="cameraWheelSensitivityDisplay">20%/step</span>
-              </div>
-            </div>
-            <div class="formrow" data-help-title="Camera lock key" data-help-text="Press this key to toggle between your locked view and your preferred free mode.">
-              <label for="cameraLockBind">Camera lock key</label>
-              <button type="button" class="formButton" id="cameraLockBind">Space</button>
-            </div>
-            <div class="formrow" data-help-title="Quick recenter" data-help-text="Snap the camera back to your champion immediately.">
-              <label for="cameraRecenterBtn">Quick recenter</label>
-              <button type="button" class="formButton" id="cameraRecenterBtn">Recenter now</button>
-            </div>
-            <div class="subhint" data-help-title="Camera tips" data-help-text="Hover the camera controls to learn how each option changes the tactical view.">Drag with the middle mouse button or use edge scrolling to scout. Press the lock key to snap back.</div>
           </div>
 
           <!-- Animation -->
@@ -537,9 +549,10 @@
             </div>
             <div class="subhint">Assign clips to player actions. Press T in-game to trigger the taunt animation.</div>
           </div>
-
-          <!-- Cursor -->
         </section>
+        </div>
+        <div class="sidebar-category" data-category="controls">
+          <h2 class="sidebar-category__title">Controls &amp; Feedback</h2>
         <section class="sidebar-section" data-section="cursor" aria-label="Cursor">
           <button class="btn" id="btnCursor" data-icon="" title="Pointer customization">
             Cursor <span class="hint">Pointer highlights</span>
@@ -585,9 +598,10 @@
             <div class="formrow"><label>Ping wheel key</label><button type="button" class="formButton" id="pingWheelBind">G</button></div>
             <div class="subhint">Hold to open the ping wheel, then drag toward a direction to choose a ping.</div>
           </div>
-
-          <!-- Ability bar -->
         </section>
+        </div>
+        <div class="sidebar-category" data-category="hud">
+          <h2 class="sidebar-category__title">HUD &amp; UI</h2>
         <section class="sidebar-section" data-section="ability-bar" aria-label="Ability Bar">
           <button class="btn" id="btnAbilityBar" data-icon="" title="Ability bar settings">
             Ability Bar <span class="hint">Configure HUD</span>
@@ -680,6 +694,7 @@
             <div class="formrow"><label>Bottom Right offset</label><div class="offsetGroup"><label><span>H</span><input type="number" id="uiOffsetBottomRightX" min="-500" max="500" value="16"></label><label><span>V</span><input type="number" id="uiOffsetBottomRightY" min="-500" max="500" value="16"></label></div></div>
           </div>
         </section>
+        </div>
 
         <div class="settingHelp" id="settingHelp" role="status" aria-live="polite">
           <span class="settingHelpTitle" id="settingHelpTitle">Settings</span>

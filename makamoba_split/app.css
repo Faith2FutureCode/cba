@@ -87,6 +87,21 @@
     .app[data-collapsed="true"] #sbHide,
     .app[data-hidden="true"] #sbHide { display:none; }
     .sidebar__content { padding:10px; padding-bottom:80px; overflow-y:auto; overflow-x:hidden; display:grid; gap:12px; flex:1 1 auto; min-height:0; }
+    .sidebar__search { display:grid; gap:6px; padding-bottom:8px; }
+    .sidebar__searchButton { display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; padding:10px 12px; border-radius:10px; border:1px solid #2a3756; background:#0e1a31; color:#cfe3ff; text-align:left; font:inherit; cursor:pointer; transition:border-color 0.2s ease, background 0.2s ease, color 0.2s ease; }
+    .sidebar__searchButton:hover { border-color:#3a5a88; background:#12233f; color:#e6f0ff; }
+    .sidebar__searchButton:focus-visible { outline:2px solid #4da1ff; outline-offset:2px; }
+    .sidebar__searchIcon { position:relative; width:16px; height:16px; border:2px solid currentColor; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; color:inherit; opacity:0.85; }
+    .sidebar__searchIcon::after { content:''; position:absolute; width:2px; height:8px; background:currentColor; border-radius:2px; transform:translate(6px,6px) rotate(45deg); }
+    .sidebar__searchButton:hover .sidebar__searchIcon,
+    .sidebar__searchButton:focus-visible .sidebar__searchIcon { opacity:1; }
+    .sidebar__searchText { flex:1 1 auto; color:inherit; font-size:13px; }
+    .sidebar__searchShortcut { padding:2px 6px; border-radius:6px; border:1px solid #2a3756; background:#13233c; color:#8aa4ce; font-size:11px; font-weight:600; letter-spacing:0.02em; }
+    .sidebar__searchHint { font-size:11px; color:#6f84a7; }
+    .sidebar-category { display:grid; gap:12px; }
+    .sidebar-category + .sidebar-category { margin-top:18px; padding-top:12px; border-top:1px solid rgba(34, 49, 76, 0.6); }
+    .sidebar-category__title { font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:#7f96b7; margin:0 2px 4px; }
+    .sidebar-category > .sidebar-section:last-of-type { border-bottom:0; padding-bottom:0; }
     .sidebar-section { display:grid; gap:8px; padding-bottom:12px; border-bottom:1px solid rgba(34, 49, 76, 0.65); }
     .sidebar-section:last-of-type { border-bottom:0; padding-bottom:0; }
     .sidebar-section > :is(.btn, .submenu, .fileNameWrap) { margin-top:0; }

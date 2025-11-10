@@ -1565,6 +1565,8 @@ import { MeshoptDecoder } from 'https://unpkg.com/three@0.160.0/examples/jsm/lib
   const sidebarEl = document.querySelector('.sidebar');
   const sbHeader = document.querySelector('.sidebar__header');
   const sbContent = document.querySelector('.sidebar__content');
+  const sidebarSearchButton = document.getElementById('sidebarSearchButton');
+  const sidebarSearchShortcut = document.querySelector('.sidebar__searchShortcut');
 
   const btnPlay = document.getElementById('btnPlay');
   const btnMap  = document.getElementById('btnMap');
@@ -14620,24 +14622,42 @@ import { MeshoptDecoder } from 'https://unpkg.com/three@0.160.0/examples/jsm/lib
     if(!pane){
       return 'Settings';
     }
+    const category = pane.closest('.sidebar-category');
+    const categoryHeading = category ? category.querySelector('.sidebar-category__title') : null;
+    const categoryTitle = categoryHeading && categoryHeading.textContent
+      ? categoryHeading.textContent.replace(/\s+/g, ' ').trim()
+      : '';
     if(pane.dataset && pane.dataset.settingGroup){
-      return pane.dataset.settingGroup;
+      const base = pane.dataset.settingGroup.trim();
+      if(categoryTitle && base && base !== categoryTitle){
+        return `${categoryTitle} › ${base}`;
+      }
+      return base || categoryTitle || 'Settings';
     }
     let sibling = pane.previousElementSibling;
+    let groupTitle = '';
     while(sibling){
       if(sibling.classList && sibling.classList.contains('btn')){
         const help = deriveSettingHelp(sibling);
         if(help && help.title){
-          return help.title;
+          groupTitle = help.title;
+          break;
         }
         const raw = sibling.textContent || '';
         if(raw.trim()){
-          return raw.replace(/\s+/g, ' ').trim();
+          groupTitle = raw.replace(/\s+/g, ' ').trim();
+          break;
         }
       }
       sibling = sibling.previousElementSibling;
     }
-    return 'Settings';
+    if(!groupTitle){
+      groupTitle = categoryTitle || 'Settings';
+    }
+    if(categoryTitle && groupTitle && groupTitle !== categoryTitle && !groupTitle.startsWith(`${categoryTitle} ›`)){
+      return `${categoryTitle} › ${groupTitle}`;
+    }
+    return groupTitle || 'Settings';
   }
 
   function sanitizeSettingId(id, fallbackIndex){
@@ -15778,6 +15798,15 @@ import { MeshoptDecoder } from 'https://unpkg.com/three@0.160.0/examples/jsm/lib
     });
     settingsSearchInput.addEventListener('input', handleSettingsSearchInput);
     settingsSearchInput.addEventListener('keydown', handleSettingsSearchInputKeydown);
+    if(sidebarSearchButton){
+      sidebarSearchButton.addEventListener('click', ()=>{
+        openSettingsSearch({ query: '', focus: true });
+      });
+    }
+    if(sidebarSearchShortcut){
+      const isMac = typeof navigator !== 'undefined' && navigator && /Mac|iPod|iPhone|iPad/.test(navigator.platform || '');
+      sidebarSearchShortcut.textContent = isMac ? '⌘K' : 'Ctrl+K';
+    }
     if(settingsSearchHelpBtn){
       settingsSearchHelpBtn.addEventListener('click', ()=> toggleSettingsSearchHelp());
     }

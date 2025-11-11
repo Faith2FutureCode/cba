@@ -14693,6 +14693,7 @@
 
   function collectSettingsDocuments(){
     const documents = [];
+    const seenIds = new Set();
     const panes = document.querySelectorAll('.submenu');
     panes.forEach((pane)=>{
       const groupTitle = deriveGroupTitle(pane);
@@ -14732,15 +14733,16 @@
         const controlId = control.dataset && control.dataset.settingId ? control.dataset.settingId : null;
         const rawId = rowId || controlId || control.id || row.id;
         const docId = sanitizeSettingId(rawId, documents.length);
-        if(settingsSearchState.docById.has(docId)){
+        if(seenIds.has(docId)){
           return;
         }
+        seenIds.add(docId);
         const help = deriveSettingHelp(row) || deriveSettingHelp(control) || deriveSettingHelp(pane);
         const title = (row.dataset && row.dataset.settingTitle) || (help && help.title) || (row.querySelector('label') ? (row.querySelector('label').textContent || '').trim() : docId);
         const desc = (row.dataset && row.dataset.settingDesc) || (help && help.text) || '';
         const section = row.dataset && row.dataset.settingSection ? row.dataset.settingSection : '';
         const basePath = pane.dataset && pane.dataset.settingPath ? pane.dataset.settingPath : groupTitle;
-        const path = section ? `${basePath}  ${section}` : basePath;
+        const path = section ? `${basePath} › ${section}` : basePath;
         let valueType = (row.dataset && row.dataset.settingType) || (control.dataset && control.dataset.settingType) || '';
         valueType = valueType ? valueType.toLowerCase() : '';
         if(!valueType){

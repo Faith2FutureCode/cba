@@ -1,11 +1,15 @@
-import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
-import { FBXLoader } from 'https://unpkg.com/three@0.160.0/examples/jsm/loaders/FBXLoader.js';
-import { GLTFLoader } from 'https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'https://unpkg.com/three@0.160.0/examples/jsm/loaders/DRACOLoader.js';
-import { MeshoptDecoder } from 'https://unpkg.com/three@0.160.0/examples/jsm/libs/meshopt_decoder.module.js';
-/* MakaMoba  Sidebar + Portal endpoints + non-overlap + Scoring (overlay) */
-(function(){
+(async () => {
+  try {
+    const THREEImport = await import('https://unpkg.com/three@0.160.0/build/three.module.js');
+    const THREE = THREEImport && THREEImport.default ? THREEImport.default : THREEImport;
+    const { OrbitControls } = await import('https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js');
+    const { FBXLoader } = await import('https://unpkg.com/three@0.160.0/examples/jsm/loaders/FBXLoader.js');
+    const { GLTFLoader } = await import('https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
+    const { DRACOLoader } = await import('https://unpkg.com/three@0.160.0/examples/jsm/loaders/DRACOLoader.js');
+    const meshoptModule = await import('https://unpkg.com/three@0.160.0/examples/jsm/libs/meshopt_decoder.module.js');
+    const MeshoptDecoder = meshoptModule.MeshoptDecoder || meshoptModule.default || meshoptModule;
+    /* MakaMoba  Sidebar + Portal endpoints + non-overlap + Scoring (overlay) */
+    (function(THREE, OrbitControls, FBXLoader, GLTFLoader, DRACOLoader, MeshoptDecoder){
   // Elements
   const app  = document.getElementById('app');
   const stage = document.getElementById('stage');
@@ -24885,4 +24889,8 @@ import { MeshoptDecoder } from 'https://unpkg.com/three@0.160.0/examples/jsm/lib
   updateScoreUI();
   playGame();
   requestAnimationFrame(tick);
+    })(THREE, OrbitControls, FBXLoader, GLTFLoader, DRACOLoader, MeshoptDecoder);
+  } catch (error) {
+    console.error('Failed to load MakaMoba dependencies', error);
+  }
 })();

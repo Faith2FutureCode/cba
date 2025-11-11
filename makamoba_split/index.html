@@ -33,8 +33,8 @@
           </button>
           <div class="sidebar__searchHint">Press Ctrl+K on Windows or ⌘K on Mac.</div>
         </div>
-        <div class="sidebar-category" data-category="project">
-          <h2 class="sidebar-category__title">Project Setup</h2>
+        <div class="sidebar-category" data-category="getting-started">
+          <h2 class="sidebar-category__title">Getting Started</h2>
         <section class="sidebar-section" data-section="play" aria-label="Start">
           <button class="btn" id="btnPlay" data-icon="" title="Start/Stop">
              Start <span class="hint">Begin waves</span>
@@ -71,8 +71,8 @@
           </div>
         </section>
         </div>
-        <div class="sidebar-category" data-category="world">
-          <h2 class="sidebar-category__title">World Tools</h2>
+        <div class="sidebar-category" data-category="world-camera">
+          <h2 class="sidebar-category__title">World &amp; Camera</h2>
         <section class="sidebar-section" data-section="colliders" aria-label="Collision">
           <button class="btn" id="btnColliders" data-icon="" title="Collision editor">
             Collision <span class="hint">Place blockers</span>
@@ -221,37 +221,9 @@
           </div>
         </section>
         </div>
-        <div class="sidebar-category" data-category="characters">
-          <h2 class="sidebar-category__title">Characters &amp; Combat</h2>
-        <section class="sidebar-section" data-section="minions" aria-label="Minions">
-          <button class="btn" id="btnMinions" data-icon="" title="Minions">
-            Minions <span class="hint">Create spawns</span>
-          </button>
-          <div class="submenu" id="minionsPane">
-            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="minionConfigLoad" type="button">Load setup</button><button class="formButton" id="minionConfigSave" type="button">Save setup</button></div></div>
-            <input id="minionConfigFile" type="file" accept="application/json,.json" style="display:none" />
-            <button class="subbtn" id="btnSpawnBlue">Create Blue-side spawn</button>
-            <button class="subbtn" id="btnSpawnRed">Create Red-side spawn</button>
-            <div class="subhint">Place one <b>Blue spawn</b> and one <b>Red spawn</b>. Each side marches toward the opposing spawn.</div>
-
-            <div class="formrow"><label for="GameState.lanes.count">Number of lanes</label><input type="number" id="GameState.lanes.count" min="1" value="1"></div>
-            <div class="subhint">Minions per lane = total minions  lanes. Adjust diagonal offsets to bend each path.</div>
-            <div class="laneOffsetList" id="laneOffsets"></div>
-
-            <div class="formrow"><label for="waveState.waveCount">Minions per wave (01000)</label><input type="number" id="waveState.waveCount" min="0" max="1000" value="7"></div>
-            <div class="formrow"><label for="waveInterval">Respawn every (sec, 560)</label><input type="number" id="waveInterval" min="5" max="60" value="30"></div>
-            <div class="formrow"><label for="spawnSpacing">Delay between spawns (sec, 0.001.00)</label><input type="number" id="spawnSpacing" min="0" max="1" step="0.01" value="0.25"></div>
-
-            <!-- Custom stats + per-wave scaling -->
-            <div class="formrow"><label for="minionSize">Minion size (px, 01000)</label><input type="number" id="minionSize" min="0" max="1000" value="15"></div>
-            <div class="formrow"><label for="minionHP">Minion health (11000)</label><input type="number" id="minionHP" min="1" max="1000" value="1000"></div>
-            <div class="formrow"><label for="minionDMG">Minion damage (1100)</label><input type="number" id="minionDMG" min="1" max="100" value="40"></div>
-            <div class="formrow"><label for="portalState.scalePct">Scaling per wave % (050)</label><input type="number" id="portalState.scalePct" min="0" max="50" value="10"></div>
-            <div class="subhint">Scaling is linear: stats this wave = base  (1 + %  (wave1)).</div>
-          </div>
-
+        <div class="sidebar-category" data-category="units">
+          <h2 class="sidebar-category__title">Units &amp; Combat</h2>
           <!-- Player -->
-        </section>
         <section class="sidebar-section" data-section="player" aria-label="Player">
           <button class="btn" id="btnPlayer" data-icon="" title="Player settings">
             Player <span class="hint">Hero tuning</span>
@@ -333,15 +305,33 @@
             <div class="subhint">Dummy inherits player health bar styling and status icons.</div>
           </div>
 
-          <!-- Prayers -->
+          <!-- Minions -->
         </section>
-        <section class="sidebar-section" data-section="prayers" aria-label="Prayers">
-          <button class="btn" id="btnPrayers" data-icon="" title="Protection prayers">
-            Prayers <span class="hint">Toggle protections</span>
+        <section class="sidebar-section" data-section="minions" aria-label="Minions">
+          <button class="btn" id="btnMinions" data-icon="" title="Minions">
+            Minions <span class="hint">Create spawns</span>
           </button>
-          <div class="submenu" id="prayerPane">
-            <div class="subhint">Only one protection prayer can be active at a time.</div>
-            <div class="playerStateConfigList" id="prayerList" aria-live="polite"></div>
+          <div class="submenu" id="minionsPane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="minionConfigLoad" type="button">Load setup</button><button class="formButton" id="minionConfigSave" type="button">Save setup</button></div></div>
+            <input id="minionConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <button class="subbtn" id="btnSpawnBlue">Create Blue-side spawn</button>
+            <button class="subbtn" id="btnSpawnRed">Create Red-side spawn</button>
+            <div class="subhint">Place one <b>Blue spawn</b> and one <b>Red spawn</b>. Each side marches toward the opposing spawn.</div>
+
+            <div class="formrow"><label for="GameState.lanes.count">Number of lanes</label><input type="number" id="GameState.lanes.count" min="1" value="1"></div>
+            <div class="subhint">Minions per lane = total minions × lanes. Adjust diagonal offsets to bend each path.</div>
+            <div class="laneOffsetList" id="laneOffsets"></div>
+
+            <div class="formrow"><label for="waveState.waveCount">Minions per wave (0–1000)</label><input type="number" id="waveState.waveCount" min="0" max="1000" value="7"></div>
+            <div class="formrow"><label for="waveInterval">Respawn every (sec, 5–60)</label><input type="number" id="waveInterval" min="5" max="60" value="30"></div>
+            <div class="formrow"><label for="spawnSpacing">Delay between spawns (sec, 0.00–1.00)</label><input type="number" id="spawnSpacing" min="0" max="1" step="0.01" value="0.25"></div>
+
+            <!-- Custom stats + per-wave scaling -->
+            <div class="formrow"><label for="minionSize">Minion size (px, 0–1000)</label><input type="number" id="minionSize" min="0" max="1000" value="15"></div>
+            <div class="formrow"><label for="minionHP">Minion health (1–1000)</label><input type="number" id="minionHP" min="1" max="1000" value="1000"></div>
+            <div class="formrow"><label for="minionDMG">Minion damage (1–100)</label><input type="number" id="minionDMG" min="1" max="100" value="40"></div>
+            <div class="formrow"><label for="portalState.scalePct">Scaling per wave % (0–50)</label><input type="number" id="portalState.scalePct" min="0" max="50" value="10"></div>
+            <div class="subhint">Scaling is linear: stats this wave = base × (1 + % × (wave − 1)).</div>
           </div>
 
           <!-- Monsters -->
@@ -368,6 +358,17 @@
             <div class="formrow"><label for="monsterIconGreen">Green emoji</label><input type="text" id="monsterIconGreen" maxlength="6" value=""></div>
             <div class="formrow"><label for="monsterIconBlue">Blue emoji</label><input type="text" id="monsterIconBlue" maxlength="6" value=""></div>
             <div class="formrow"><label for="monsterIconRed">Red emoji</label><input type="text" id="monsterIconRed" maxlength="6" value=""></div>
+          </div>
+
+          <!-- Prayers -->
+        </section>
+        <section class="sidebar-section" data-section="prayers" aria-label="Prayers">
+          <button class="btn" id="btnPrayers" data-icon="" title="Protection prayers">
+            Prayers <span class="hint">Toggle protections</span>
+          </button>
+          <div class="submenu" id="prayerPane">
+            <div class="subhint">Only one protection prayer can be active at a time.</div>
+            <div class="playerStateConfigList" id="prayerList" aria-live="polite"></div>
           </div>
 
           <!-- Animation -->
@@ -551,8 +552,28 @@
           </div>
         </section>
         </div>
-        <div class="sidebar-category" data-category="controls">
-          <h2 class="sidebar-category__title">Controls &amp; Feedback</h2>
+        <div class="sidebar-category" data-category="controls-shortcuts">
+          <h2 class="sidebar-category__title">Controls &amp; Shortcuts</h2>
+        <section class="sidebar-section" data-section="keybinds" aria-label="Keybinds">
+          <button class="btn" id="btnKeybinds" data-icon="" title="Spell casting keybinds">
+            Keybinds <span class="hint">Casting modifiers</span>
+          </button>
+          <div class="submenu" id="keybindPane">
+            <div class="formrow"><label for="spellCastDefault">Default spell cast type</label><select id="spellCastDefault"><option value="quick">Quick cast (default)</option><option value="normal">Normal cast</option><option value="quickIndicator">Quick cast with indicator</option><option value="none">None</option></select></div>
+            <div class="formrow"><label>Normal cast modifier</label><button type="button" class="formButton" id="spellCastNormalBind"></button></div>
+            <div class="subhint">Hold to preview a skill shot, then press again or left-click to confirm. Right-click cancels.</div>
+            <div class="formrow"><label>Quick cast modifier</label><button type="button" class="formButton" id="spellCastQuickBind"></button></div>
+            <div class="subhint">Hold to force abilities to fire instantly on key press.</div>
+            <div class="formrow"><label>Quick indicator modifier</label><button type="button" class="formButton" id="spellCastIndicatorBind"></button></div>
+            <div class="subhint">Hold to preview the indicator, then release the ability key to cast.</div>
+            <div class="formrow"><label>Attack move key</label><button type="button" class="formButton" id="attackMoveBind">A</button></div>
+            <div class="subhint">Issue an attack move toward your cursor and target the closest enemy automatically.</div>
+            <div class="formrow"><label>Ping wheel key</label><button type="button" class="formButton" id="pingWheelBind">G</button></div>
+            <div class="subhint">Hold to open the ping wheel, then drag toward a direction to choose a ping.</div>
+          </div>
+
+          <!-- Cursor -->
+        </section>
         <section class="sidebar-section" data-section="cursor" aria-label="Cursor">
           <button class="btn" id="btnCursor" data-icon="" title="Pointer customization">
             Cursor <span class="hint">Pointer highlights</span>
@@ -579,96 +600,11 @@
             <div class="subhint">Pings use your cursors last position. Adjust the emoji to personalize each alert.</div>
           </div>
 
-          <!-- Keybinds -->
-        </section>
-        <section class="sidebar-section" data-section="keybinds" aria-label="Keybinds">
-          <button class="btn" id="btnKeybinds" data-icon="" title="Spell casting keybinds">
-            Keybinds <span class="hint">Casting modifiers</span>
-          </button>
-          <div class="submenu" id="keybindPane">
-            <div class="formrow"><label for="spellCastDefault">Default spell cast type</label><select id="spellCastDefault"><option value="quick">Quick cast (default)</option><option value="normal">Normal cast</option><option value="quickIndicator">Quick cast with indicator</option><option value="none">None</option></select></div>
-            <div class="formrow"><label>Normal cast modifier</label><button type="button" class="formButton" id="spellCastNormalBind"></button></div>
-            <div class="subhint">Hold to preview a skill shot, then press again or left-click to confirm. Right-click cancels.</div>
-            <div class="formrow"><label>Quick cast modifier</label><button type="button" class="formButton" id="spellCastQuickBind"></button></div>
-            <div class="subhint">Hold to force abilities to fire instantly on key press.</div>
-            <div class="formrow"><label>Quick indicator modifier</label><button type="button" class="formButton" id="spellCastIndicatorBind"></button></div>
-            <div class="subhint">Hold to preview the indicator, then release the ability key to cast.</div>
-            <div class="formrow"><label>Attack move key</label><button type="button" class="formButton" id="attackMoveBind">A</button></div>
-            <div class="subhint">Issue an attack move toward your cursor and target the closest enemy automatically.</div>
-            <div class="formrow"><label>Ping wheel key</label><button type="button" class="formButton" id="pingWheelBind">G</button></div>
-            <div class="subhint">Hold to open the ping wheel, then drag toward a direction to choose a ping.</div>
-          </div>
         </section>
         </div>
-        <div class="sidebar-category" data-category="hud">
-          <h2 class="sidebar-category__title">HUD &amp; UI</h2>
-        <section class="sidebar-section" data-section="ability-bar" aria-label="Ability Bar">
-          <button class="btn" id="btnAbilityBar" data-icon="" title="Ability bar settings">
-            Ability Bar <span class="hint">Configure HUD</span>
-          </button>
-          <div class="submenu" id="abilityPane">
-            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="abilityConfigLoad" type="button">Load setup</button><button class="formButton" id="abilityConfigSave" type="button">Save setup</button></div></div>
-            <input id="abilityConfigFile" type="file" accept="application/json,.json" style="display:none" />
-            <div class="formrow"><label for="abilityBarState.count">Number of abilities (020)</label><input type="number" id="abilityBarState.count" min="0" max="20" value="20"></div>
-            <div class="formrow"><label for="abilityBarState.scale">Ability bar size (04)</label><input type="number" id="abilityBarState.scale" min="0" max="4" step="0.1" value="1"></div>
-            <div class="formrow"><label for="abilityBarState.orientation">Ability bar orientation</label><select id="abilityBarState.orientation"><option value="horizontal">Horizontal</option><option value="vertical">Vertical</option></select></div>
-            <div class="formrow"><label for="abilityBarState.healthPlacement.horizontal">Health bar position (horizontal)</label><select id="abilityBarState.healthPlacement.horizontal"><option value="bottom" selected>Bottom</option><option value="top">Top</option></select></div>
-            <div class="formrow"><label for="abilityBarState.healthPlacement.vertical">Health bar position (vertical)</label><select id="abilityBarState.healthPlacement.vertical"><option value="right" selected>Right</option><option value="left">Left</option></select></div>
-            <div class="formrow"><label for="abilityBarState.healthPlacement.textVertical">Health text (vertical)</label><select id="abilityBarState.healthPlacement.textVertical"><option value="top" selected>Above bar</option><option value="bottom">Below bar</option></select></div>
-            <div class="formrow"><label for="abilityBarState.statsPlacementVertical">Stats panel position (vertical)</label><select id="abilityBarState.statsPlacementVertical"><option value="top" selected>Top</option><option value="bottom">Bottom</option></select></div>
-            <div class="formrow"><label for="abilityTunables.spellSpeedScale">Spell speed multiplier (010)</label><input type="number" id="abilityTunables.spellSpeedScale" min="0" max="10" step="0.1" value="1"></div>
-            <div class="formrow"><label for="abilityTunables.spellSizeScale">Spell size multiplier (010)</label><input type="number" id="abilityTunables.spellSizeScale" min="0" max="10" step="0.1" value="1"></div>
-            <button class="subbtn" id="btnSaveSpells" type="button">Save spell configs</button>
-            <div class="subhint">Set how many slots appear on the HUD and scale their size. A size of 0 hides the bar.</div>
-          </div>
+        <div class="sidebar-category" data-category="hud-progress">
+          <h2 class="sidebar-category__title">HUD &amp; Progress</h2>
 
-          <!-- Minimap -->
-        </section>
-        <section class="sidebar-section" data-section="minimap" aria-label="Minimap">
-          <button class="btn" id="btnMinimap" data-icon="" title="Minimap settings">
-            Minimap <span class="hint">Map overview</span>
-          </button>
-          <div class="submenu" id="minimapPane">
-            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="minimapConfigLoad" type="button">Load setup</button><button class="formButton" id="minimapConfigSave" type="button">Save setup</button></div></div>
-            <input id="minimapConfigFile" type="file" accept="application/json,.json" style="display:none" />
-            <div class="formrow"><label for="minimapScale">Minimap size (05)</label><input type="number" id="minimapScale" min="0" max="5" step="0.1" value="1"></div>
-            <div class="formrow"><label for="minimapClickToMove">Click-to-move orders</label><select id="minimapClickToMove"><option value="enabled" selected>Enabled</option><option value="disabled">Disabled</option></select></div>
-            <div class="formrow"><label for="minimapClickThrough">Click-through</label><select id="minimapClickThrough"><option value="blocked" selected>Blocked</option><option value="allow">Allow</option></select></div>
-            <div class="subhint">Set the minimap scale. A value of 0 hides it entirely.</div>
-            <div class="subhint">Disable click-to-move to prevent issuing orders from the minimap, or allow click-through so stage clicks pass beneath it.</div>
-          </div>
-
-          <!-- Gold -->
-        </section>
-        <section class="sidebar-section" data-section="gold" aria-label="Gold">
-          <button class="btn" id="btnGold" data-icon="&#x1F4B0;" title="Gold settings">
-            Gold <span class="hint">Economy tuning...</span>
-          </button>
-          <div class="submenu" id="goldPane">
-            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="goldConfigLoad" type="button">Load setup</button><button class="formButton" id="goldConfigSave" type="button">Save setup</button></div></div>
-            <input id="goldConfigFile" type="file" accept="application/json,.json" style="display:none" />
-            <div class="formrow"><label for="goldState.perSecond">Passive gold (per second, 0100)</label><input type="number" id="goldState.perSecond" min="0" max="100" step="0.1" value="15"></div>
-            <div class="formrow"><label for="goldState.perKill">Gold per execute (0100)</label><input type="number" id="goldState.perKill" min="0" max="100" value="0"></div>
-            <div class="subhint">Earn passive gold while the timer runs. Executing a minion with the final blow grants bonus gold.</div>
-          </div>
-
-          <!-- Score SETTINGS ONLY (no live score numbers here) -->
-        </section>
-        <section class="sidebar-section" data-section="score" aria-label="Score Rules">
-          <button class="btn" id="btnScore" data-icon="" title="Score settings">
-            Score Rules <span class="hint">Points & target</span>
-          </button>
-          <div class="submenu" id="scorePane">
-            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="scoreConfigLoad" type="button">Load setup</button><button class="formButton" id="scoreConfigSave" type="button">Save setup</button></div></div>
-            <input id="scoreConfigFile" type="file" accept="application/json,.json" style="display:none" />
-            <div class="formrow"><label for="scoreState.pointsPer">Points per minion (110)</label><input type="number" id="scoreState.pointsPer" min="1" max="10" value="1"></div>
-            <div class="formrow"><label for="scoreState.winTarget">Score to win (11000)</label><input type="number" id="scoreState.winTarget" min="1" max="1000" value="50"></div>
-            <button class="subbtn" id="resetScore">Reset scores</button>
-            <div class="subhint">A team earns points when its minion enters the <b>opponents</b> portal.</div>
-          </div>
-
-          <!-- UI Layout -->
-        </section>
         <section class="sidebar-section" data-section="ui-layout" aria-label="UI Layout">
           <button class="btn" id="btnUiLayout" data-icon="" title="UI layout settings">
             UI Layout <span class="hint">Arrange HUD</span>
@@ -693,6 +629,79 @@
             <div class="formrow"><label>Bottom Middle offset</label><div class="offsetGroup"><label><span>H</span><input type="number" id="uiOffsetBottomMiddleX" min="-500" max="500" value="0"></label><label><span>V</span><input type="number" id="uiOffsetBottomMiddleY" min="-500" max="500" value="16"></label></div></div>
             <div class="formrow"><label>Bottom Right offset</label><div class="offsetGroup"><label><span>H</span><input type="number" id="uiOffsetBottomRightX" min="-500" max="500" value="16"></label><label><span>V</span><input type="number" id="uiOffsetBottomRightY" min="-500" max="500" value="16"></label></div></div>
           </div>
+
+          <!-- Ability Bar -->
+        </section>
+
+        <section class="sidebar-section" data-section="ability-bar" aria-label="Ability Bar">
+          <button class="btn" id="btnAbilityBar" data-icon="" title="Ability bar settings">
+            Ability Bar <span class="hint">Configure HUD</span>
+          </button>
+          <div class="submenu" id="abilityPane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="abilityConfigLoad" type="button">Load setup</button><button class="formButton" id="abilityConfigSave" type="button">Save setup</button></div></div>
+            <input id="abilityConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <div class="formrow"><label for="abilityBarState.count">Number of abilities (020)</label><input type="number" id="abilityBarState.count" min="0" max="20" value="20"></div>
+            <div class="formrow"><label for="abilityBarState.scale">Ability bar size (04)</label><input type="number" id="abilityBarState.scale" min="0" max="4" step="0.1" value="1"></div>
+            <div class="formrow"><label for="abilityBarState.orientation">Ability bar orientation</label><select id="abilityBarState.orientation"><option value="horizontal">Horizontal</option><option value="vertical">Vertical</option></select></div>
+            <div class="formrow"><label for="abilityBarState.healthPlacement.horizontal">Health bar position (horizontal)</label><select id="abilityBarState.healthPlacement.horizontal"><option value="bottom" selected>Bottom</option><option value="top">Top</option></select></div>
+            <div class="formrow"><label for="abilityBarState.healthPlacement.vertical">Health bar position (vertical)</label><select id="abilityBarState.healthPlacement.vertical"><option value="right" selected>Right</option><option value="left">Left</option></select></div>
+            <div class="formrow"><label for="abilityBarState.healthPlacement.textVertical">Health text (vertical)</label><select id="abilityBarState.healthPlacement.textVertical"><option value="top" selected>Above bar</option><option value="bottom">Below bar</option></select></div>
+            <div class="formrow"><label for="abilityBarState.statsPlacementVertical">Stats panel position (vertical)</label><select id="abilityBarState.statsPlacementVertical"><option value="top" selected>Top</option><option value="bottom">Bottom</option></select></div>
+            <div class="formrow"><label for="abilityTunables.spellSpeedScale">Spell speed multiplier (010)</label><input type="number" id="abilityTunables.spellSpeedScale" min="0" max="10" step="0.1" value="1"></div>
+            <div class="formrow"><label for="abilityTunables.spellSizeScale">Spell size multiplier (010)</label><input type="number" id="abilityTunables.spellSizeScale" min="0" max="10" step="0.1" value="1"></div>
+            <button class="subbtn" id="btnSaveSpells" type="button">Save spell configs</button>
+            <div class="subhint">Set how many slots appear on the HUD and scale their size. A size of 0 hides the bar.</div>
+          </div>
+
+          <!-- Minimap -->
+        </section>
+
+        <section class="sidebar-section" data-section="minimap" aria-label="Minimap">
+          <button class="btn" id="btnMinimap" data-icon="" title="Minimap settings">
+            Minimap <span class="hint">Map overview</span>
+          </button>
+          <div class="submenu" id="minimapPane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="minimapConfigLoad" type="button">Load setup</button><button class="formButton" id="minimapConfigSave" type="button">Save setup</button></div></div>
+            <input id="minimapConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <div class="formrow"><label for="minimapScale">Minimap size (05)</label><input type="number" id="minimapScale" min="0" max="5" step="0.1" value="1"></div>
+            <div class="formrow"><label for="minimapClickToMove">Click-to-move orders</label><select id="minimapClickToMove"><option value="enabled" selected>Enabled</option><option value="disabled">Disabled</option></select></div>
+            <div class="formrow"><label for="minimapClickThrough">Click-through</label><select id="minimapClickThrough"><option value="blocked" selected>Blocked</option><option value="allow">Allow</option></select></div>
+            <div class="subhint">Set the minimap scale. A value of 0 hides it entirely.</div>
+            <div class="subhint">Disable click-to-move to prevent issuing orders from the minimap, or allow click-through so stage clicks pass beneath it.</div>
+          </div>
+
+          <!-- Score Rules -->
+        </section>
+
+          <!-- Score SETTINGS ONLY (no live score numbers here) -->
+        <section class="sidebar-section" data-section="score" aria-label="Score Rules">
+          <button class="btn" id="btnScore" data-icon="" title="Score settings">
+            Score Rules <span class="hint">Points & target</span>
+          </button>
+          <div class="submenu" id="scorePane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="scoreConfigLoad" type="button">Load setup</button><button class="formButton" id="scoreConfigSave" type="button">Save setup</button></div></div>
+            <input id="scoreConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <div class="formrow"><label for="scoreState.pointsPer">Points per minion (110)</label><input type="number" id="scoreState.pointsPer" min="1" max="10" value="1"></div>
+            <div class="formrow"><label for="scoreState.winTarget">Score to win (11000)</label><input type="number" id="scoreState.winTarget" min="1" max="1000" value="50"></div>
+            <button class="subbtn" id="resetScore">Reset scores</button>
+            <div class="subhint">A team earns points when its minion enters the <b>opponents</b> portal.</div>
+          </div>
+
+          <!-- Gold -->
+        </section>
+
+        <section class="sidebar-section" data-section="gold" aria-label="Gold">
+          <button class="btn" id="btnGold" data-icon="&#x1F4B0;" title="Gold settings">
+            Gold <span class="hint">Economy tuning...</span>
+          </button>
+          <div class="submenu" id="goldPane">
+            <div class="formrow"><label>Configuration</label><div class="rangeWrap"><button class="formButton" id="goldConfigLoad" type="button">Load setup</button><button class="formButton" id="goldConfigSave" type="button">Save setup</button></div></div>
+            <input id="goldConfigFile" type="file" accept="application/json,.json" style="display:none" />
+            <div class="formrow"><label for="goldState.perSecond">Passive gold (per second, 0100)</label><input type="number" id="goldState.perSecond" min="0" max="100" step="0.1" value="15"></div>
+            <div class="formrow"><label for="goldState.perKill">Gold per execute (0100)</label><input type="number" id="goldState.perKill" min="0" max="100" value="0"></div>
+            <div class="subhint">Earn passive gold while the timer runs. Executing a minion with the final blow grants bonus gold.</div>
+          </div>
+
         </section>
         </div>
 
